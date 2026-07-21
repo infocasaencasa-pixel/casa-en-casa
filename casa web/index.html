@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+<title>Casa en Casa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+<!-- React -->
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin onerror="document.getElementById('root').innerHTML='<div style=\'padding:40px;font-family:sans-serif;color:#8B4444\'>No se pudo cargar React (unpkg.com). Prueba con otra red o desactiva bloqueadores de anuncios.</div>'"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin onerror="document.getElementById('root').innerHTML='<div style=\'padding:40px;font-family:sans-serif;color:#8B4444\'>No se pudo cargar React-DOM (unpkg.com). Prueba con otra red o desactiva bloqueadores de anuncios.</div>'"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin onerror="document.getElementById('root').innerHTML='<div style=\'padding:40px;font-family:sans-serif;color:#8B4444\'>No se pudo cargar Babel (unpkg.com). Prueba con otra red o desactiva bloqueadores de anuncios.</div>'"></script>
+
+<!-- Firebase (compat SDK: works with plain <script> tags, no build tools needed) -->
+<script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-app-compat.js" onerror="document.getElementById('root').innerHTML='<div style=\'padding:40px;font-family:sans-serif;color:#8B4444\'>No se pudo cargar Firebase (gstatic.com). Prueba con otra red o desactiva bloqueadores de anuncios.</div>'"></script>
+<script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore-compat.js" onerror="document.getElementById('root').innerHTML='<div style=\'padding:40px;font-family:sans-serif;color:#8B4444\'>No se pudo cargar Firestore (gstatic.com). Prueba con otra red o desactiva bloqueadores de anuncios.</div>'"></script>
+<script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-auth-compat.js" onerror="document.getElementById('root').innerHTML='<div style=\'padding:40px;font-family:sans-serif;color:#8B4444\'>No se pudo cargar el inicio de sesión (gstatic.com). Prueba con otra red o desactiva bloqueadores de anuncios.</div>'"></script>
+
+<style>
+  html,body{margin:0;padding:0;}
+  :root{
+    --paper:#F5F0E1;
+    --paper-line:#E4D9BE;
+    --card:#FFFDF7;
+    --ink:#2A241D;
+    --ink-soft:#756B5C;
+    --moss:#4B6350;
+    --moss-soft:#DCE5DD;
+    --clay:#B8632F;
+    --clay-soft:#F3DFCC;
+    --slate:#5C7A8A;
+    --slate-soft:#DCE6EA;
+    --sold:#8B4444;
+    --sold-soft:#F1DADA;
+    --radius:14px;
+  }
+  .cec-app{
+    font-family:'Work Sans','Segoe UI',sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+  }
+  .cec-app *{box-sizing:border-box;}
+  .cec-screen{
+    width:100%;
+    max-width:480px;
+    min-height:100vh;
+    background:var(--paper);
+    position:relative;
+    padding-bottom:96px;
+  }
+  .cec-loading{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    height:100vh;width:100%;gap:12px;color:var(--ink-soft);
+  }
+  .cec-loading-badge{font-size:36px;}
+
+  .cec-header{
+    display:flex;align-items:center;gap:8px;
+    padding:18px 12px 10px;
+    position:sticky;top:0;background:var(--paper);z-index:5;
+    border-bottom:1px solid var(--paper-line);
+  }
+  .cec-header-title{
+    font-family:'Fraunces','Georgia',serif;
+    font-weight:600;font-size:19px;flex:1;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .cec-header-right{min-width:32px;text-align:right;}
+  .cec-iconbtn{
+    width:36px;height:36px;border-radius:50%;border:1px solid var(--paper-line);
+    background:var(--card);font-size:16px;cursor:pointer;color:var(--ink);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .cec-iconbtn--ghost{border:none;background:transparent;}
+
+  .cec-hero{padding:22px 20px 14px;}
+  .cec-hero-tab{
+    width:46px;height:46px;border-radius:12px;background:var(--moss);
+    color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;
+    margin-bottom:10px;
+  }
+  .cec-hero h1{
+    font-family:'Fraunces','Georgia',serif;font-size:30px;margin:0 0 6px;font-weight:600;
+  }
+  .cec-hero p{margin:0;color:var(--ink-soft);font-size:14.5px;line-height:1.45;max-width:34ch;}
+
+  .cec-segmented{
+    display:flex;margin:0 20px 16px;background:var(--paper-line);
+    border-radius:999px;padding:4px;gap:4px;
+  }
+  .cec-segmented button{
+    flex:1;border:none;background:transparent;padding:9px 4px;border-radius:999px;
+    font-size:13.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;
+    font-family:'Work Sans',sans-serif;
+  }
+  .cec-segmented button.active{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08);}
+
+  .cec-list{padding:0 20px;display:flex;flex-direction:column;gap:10px;}
+
+  .cec-folder-card{
+    position:relative;display:flex;align-items:center;gap:12px;
+    background:var(--card);border:1px solid var(--paper-line);border-left:5px solid var(--moss);
+    border-radius:var(--radius);padding:16px 14px 16px 18px;cursor:pointer;text-align:left;width:100%;
+    font-family:'Work Sans',sans-serif;
+  }
+  .cec-folder-card.accent-clay{border-left-color:var(--clay);}
+  .cec-folder-card.accent-slate{border-left-color:var(--slate);}
+  .cec-folder-tab{
+    position:absolute;top:-1px;left:18px;width:28px;height:8px;background:var(--paper-line);
+    border-radius:0 0 4px 4px;
+  }
+  .cec-folder-card-body{flex:1;min-width:0;}
+  .cec-folder-card-title{
+    font-family:'Fraunces','Georgia',serif;font-weight:600;font-size:17px;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .cec-folder-card-sub{color:var(--ink-soft);font-size:13px;margin-top:2px;}
+  .cec-chevron{color:var(--ink-soft);font-size:20px;}
+
+  .cec-casa-sub{padding:8px 20px 0;color:var(--ink-soft);font-size:13.5px;}
+  .cec-grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px 20px;
+  }
+  .cec-grid--folders{grid-template-columns:1fr 1fr;}
+  .cec-cat-card{
+    background:var(--card);border:1px solid var(--paper-line);border-top:4px solid var(--moss);
+    border-radius:var(--radius);padding:16px 12px;cursor:pointer;text-align:left;
+    display:flex;flex-direction:column;gap:6px;font-family:'Work Sans',sans-serif;
+    min-height:96px;
+  }
+  .cec-cat-card.accent-clay{border-top-color:var(--clay);}
+  .cec-cat-card.accent-slate{border-top-color:var(--slate);}
+  .cec-cat-icon{font-size:22px;}
+  .cec-cat-label{font-size:13.5px;font-weight:600;line-height:1.25;}
+  .cec-cat-count{
+    font-family:'IBM Plex Mono','Courier New',monospace;font-size:11.5px;color:var(--ink-soft);
+  }
+
+  .cec-obj-card{
+    background:var(--card);border:1px solid var(--paper-line);border-radius:var(--radius);
+    overflow:hidden;cursor:pointer;text-align:left;font-family:'Work Sans',sans-serif;
+    display:flex;flex-direction:column;
+  }
+  .cec-obj-photo{
+    position:relative;aspect-ratio:1;background:var(--paper-line);
+    display:flex;align-items:center;justify-content:center;font-size:30px;overflow:hidden;
+  }
+  .cec-obj-photo img{width:100%;height:100%;object-fit:cover;}
+  .cec-obj-info{padding:10px 10px 12px;}
+  .cec-obj-nombre{font-weight:600;font-size:13.5px;line-height:1.3;margin-bottom:3px;}
+  .cec-obj-precio{
+    font-family:'IBM Plex Mono','Courier New',monospace;font-size:12.5px;color:var(--clay);
+  }
+  .cec-badge{
+    position:absolute;top:8px;left:8px;font-size:10.5px;font-weight:700;padding:3px 8px;
+    border-radius:999px;text-transform:uppercase;letter-spacing:.03em;
+  }
+  .cec-badge--sold{background:var(--sold-soft);color:var(--sold);}
+  .cec-badge--live{background:var(--moss-soft);color:var(--moss);}
+  .cec-badge--float{top:14px;left:14px;font-size:12px;}
+
+  .cec-form{padding:16px 20px;display:flex;flex-direction:column;gap:14px;}
+  .cec-field{display:flex;flex-direction:column;gap:6px;}
+  .cec-field span{font-size:12.5px;font-weight:600;color:var(--ink-soft);}
+  .cec-field input,.cec-field textarea,.cec-field select{
+    border:1px solid var(--paper-line);background:var(--card);border-radius:10px;
+    padding:11px 12px;font-size:15px;font-family:'Work Sans',sans-serif;color:var(--ink);resize:vertical;
+  }
+  .cec-field input:focus,.cec-field textarea:focus{outline:2px solid var(--moss);outline-offset:1px;}
+  .cec-note{font-size:12.5px;color:var(--ink-soft);line-height:1.4;}
+  .cec-error-text{color:var(--sold);font-size:12.5px;margin:-6px 0 0;}
+
+  .cec-photo-picker{
+    aspect-ratio:4/3;border-radius:var(--radius);border:2px dashed var(--paper-line);
+    background:var(--card);display:flex;align-items:center;justify-content:center;overflow:hidden;
+    cursor:pointer;
+  }
+  .cec-photo-picker img{width:100%;height:100%;object-fit:cover;}
+  .cec-photo-placeholder{color:var(--ink-soft);font-size:14px;text-align:center;padding:0 16px;}
+
+  .cec-btn{
+    border:none;border-radius:12px;padding:12px 16px;font-size:14.5px;font-weight:600;
+    cursor:pointer;font-family:'Work Sans',sans-serif;
+  }
+  .cec-btn--block{width:100%;}
+  .cec-btn--primary{background:var(--moss);color:#fff;}
+  .cec-btn--primary:disabled{opacity:.45;cursor:not-allowed;}
+  .cec-btn--ghost{background:transparent;border:1px solid var(--paper-line);color:var(--ink);}
+  .cec-btn--danger{background:var(--sold);color:#fff;}
+  .cec-link-danger{
+    background:none;border:none;color:var(--sold);font-size:13px;text-decoration:underline;
+    cursor:pointer;padding:6px 0;font-family:'Work Sans',sans-serif;
+  }
+  .cec-danger-zone{padding:6px 20px 20px;}
+  .cec-confirm{
+    background:var(--sold-soft);border-radius:10px;padding:12px;display:flex;
+    flex-direction:column;gap:10px;font-size:13.5px;
+  }
+  .cec-confirm div{display:flex;gap:8px;}
+  .cec-confirm .cec-btn{padding:8px 12px;font-size:13px;flex:1;}
+
+  .cec-fab{
+    position:fixed;bottom:28px;right:calc(50% - 240px + 20px);
+    width:56px;height:56px;border-radius:50%;background:var(--moss);color:#fff;
+    border:none;font-size:26px;box-shadow:0 6px 16px rgba(75,99,80,.4);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+  }
+  @media (max-width:520px){ .cec-fab{right:20px;} }
+
+  .cec-ficha-photo{
+    position:relative;aspect-ratio:4/3;background:var(--paper-line);
+    display:flex;align-items:center;justify-content:center;font-size:48px;overflow:hidden;
+  }
+  .cec-ficha-photo img{width:100%;height:100%;object-fit:cover;}
+  .cec-ficha-body{padding:18px 20px 30px;}
+  .cec-eyebrow{
+    font-family:'IBM Plex Mono','Courier New',monospace;font-size:11.5px;color:var(--ink-soft);
+    text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;
+  }
+  .cec-ficha-nombre{
+    font-family:'Fraunces','Georgia',serif;font-size:23px;font-weight:600;margin:0 0 6px;
+  }
+  .cec-ficha-precio{
+    font-family:'IBM Plex Mono','Courier New',monospace;font-size:18px;color:var(--clay);
+    margin-bottom:16px;
+  }
+  .cec-ficha-row{
+    display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid var(--paper-line);
+    font-size:13.5px;
+  }
+  .cec-ficha-row span:first-child{color:var(--ink-soft);}
+  .cec-ficha-block{padding-top:14px;border-top:1px solid var(--paper-line);margin-top:4px;}
+  .cec-ficha-block-label{
+    font-size:11.5px;font-weight:700;text-transform:uppercase;color:var(--ink-soft);
+    letter-spacing:.03em;
+  }
+  .cec-ficha-block p{margin:6px 0 0;font-size:14px;line-height:1.5;}
+  .cec-ficha-actions{display:flex;flex-direction:column;gap:10px;margin-top:20px;}
+
+  .cec-empty{
+    grid-column:1/-1;display:flex;flex-direction:column;align-items:center;text-align:center;
+    padding:40px 24px;gap:8px;
+  }
+  .cec-empty-icon{font-size:34px;}
+  .cec-empty-title{font-weight:600;font-size:15px;}
+  .cec-empty-hint{color:var(--ink-soft);font-size:13px;max-width:28ch;margin:0 0 8px;}
+
+  .cec-toast{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:999px;
+    font-size:13px;z-index:20;box-shadow:0 6px 16px rgba(0,0,0,.25);
+  }
+</style>
+</head>
+<body>
+<div id="root"><div style="padding:40px;font-family:sans-serif;color:#756B5C;">Cargando Casa en Casa…</div></div>
+
+<script>
+  // ---- Firebase setup ----
+  const firebaseConfig = {
+    apiKey: "AIzaSyCMuMSP22pzKO4EAiBX1vQjKF2wXS-N55o",
+    authDomain: "casa-en-casa.firebaseapp.com",
+    projectId: "casa-en-casa",
+    storageBucket: "casa-en-casa.firebasestorage.app",
+    messagingSenderId: "272769105999",
+    appId: "1:272769105999:web:465e79fc91d8297a3baa3a"
+  };
+  try {
+    firebase.initializeApp(firebaseConfig);
+    window.__cecDb = firebase.firestore();
+    window.__cecAuth = firebase.auth();
+  } catch (e) {
+    document.getElementById('root').innerHTML =
+      '<div style="padding:40px;font-family:sans-serif;color:#8B4444;">No se pudo iniciar Firebase: ' + e.message + '</div>';
+  }
+</script>
+
+<script type="text/plain" id="cec-source">
+const { useState, useEffect, useRef } = React;
+
+const ADMIN_UID = "qilDy7Dng1bnORCa7TCJkqLgQq72";
+
+/* ---------- constants ---------- */
+
+const CATEGORIES = [
+  { key: "muebles", label: "Muebles", icon: "🪑" },
+  { key: "cocina", label: "Cocina y comedor", icon: "🍽️" },
+  { key: "electro", label: "Electrodomésticos", icon: "🔌" },
+  { key: "textiles", label: "Textiles del hogar", icon: "🧺" },
+  { key: "decoracion", label: "Decoración e iluminación", icon: "💡" },
+  { key: "jardin", label: "Jardín y exterior", icon: "🌳" },
+  { key: "herramientas", label: "Herramientas y herrajes", icon: "🔧" },
+  { key: "electronica", label: "Electrónica y entretenimiento", icon: "📺" },
+  { key: "otros", label: "Otros objetos del hogar", icon: "🏡" },
+];
+
+const ACCENTS = ["moss", "clay", "slate"];
+
+const SUBCATEGORIES = {
+  muebles: ["Sofás", "Sillones", "Mesas auxiliares", "Mesas de comedor", "Sillas", "Escritorios", "Burós", "Camas", "Cómodas", "Aparadores", "Mecedoras"],
+  cocina: ["Vajillas", "Cubiertos", "Cuchillos", "Cucharas de servir", "Copas", "Vasos", "Ollas", "Sartenes", "Utensilios de cocina", "Manteles", "Recipientes para almacenar"],
+  electro: ["Pequeños electrodomésticos", "Cafeteras", "Licuadoras", "Tostadores", "Hornos eléctricos", "Microondas", "Aspiradoras", "Otros aparatos del hogar"],
+  textiles: ["Sábanas", "Toallas", "Edredones", "Almohadas", "Cobijas", "Manteles", "Otros textiles"],
+  decoracion: ["Lámparas", "Espejos", "Cristal cortado", "Cuadros", "Adornos", "Floreros", "Objetos decorativos"],
+  herramientas: ["Cajas de herramientas", "Martillos", "Desarmadores", "Palas", "Herramientas de jardín", "Herrajes", "Otros accesorios"],
+  jardin: ["Mesas plegables", "Sillas plegables", "Muebles de exterior", "Accesorios de jardín"],
+  electronica: ["Televisiones", "Equipos de sonido", "Aparatos electrónicos"],
+};
+
+function categoriaInfo(key) {
+  return CATEGORIES.find((c) => c.key === key) || { label: key, icon: "📦" };
+}
+
+function formatPrecio(n) {
+  const num = Number(n);
+  if (!n || isNaN(num)) return "Sin precio";
+  return num.toLocaleString("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 });
+}
+
+function compressImage(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const maxW = 900;
+        const scale = Math.min(1, maxW / img.width);
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", 0.65));
+      };
+      img.onerror = () => reject(new Error("No se pudo leer la imagen"));
+      img.src = e.target.result;
+    };
+    reader.onerror = () => reject(new Error("No se pudo leer el archivo"));
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ---------- Firestore helpers ---------- */
+
+async function fetchCasas() {
+  const snap = await window.__cecDb.collection("casas").orderBy("createdAt", "desc").get();
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+async function fetchObjetosDeCasa(casaId) {
+  const snap = await window.__cecDb.collection("objetos").where("casaId", "==", casaId).get();
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+}
+async function fetchObjetosPublicados() {
+  const snap = await window.__cecDb.collection("objetos").where("publicado", "==", true).get();
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+}
+async function addCasaDoc(data) {
+  const ref = await window.__cecDb.collection("casas").add({ ...data, createdAt: Date.now() });
+  return ref.id;
+}
+async function addObjetoDoc(data) {
+  const ref = await window.__cecDb.collection("objetos").add({ ...data, createdAt: Date.now() });
+  return ref.id;
+}
+async function updateObjetoDoc(id, patch) {
+  await window.__cecDb.collection("objetos").doc(id).update(patch);
+}
+async function deleteObjetoDoc(id) {
+  await window.__cecDb.collection("objetos").doc(id).delete();
+}
+async function deleteCasaDoc(id) {
+  await window.__cecDb.collection("casas").doc(id).delete();
+  const snap = await window.__cecDb.collection("objetos").where("casaId", "==", id).get();
+  const batch = window.__cecDb.batch();
+  snap.docs.forEach((d) => batch.delete(d.ref));
+  await batch.commit();
+}
+
+/* ---------- root ---------- */
+
+function CasaEnCasa() {
+  const [authUser, setAuthUser] = useState(undefined); // undefined = checking, null = logged out
+  const [ready, setReady] = useState(false);
+  const [casas, setCasas] = useState([]);
+  const [objetos, setObjetos] = useState([]); // caché en memoria: se va llenando por casa o por publicados
+  const [cargandoObjetos, setCargandoObjetos] = useState(false);
+  const [errorCasa, setErrorCasa] = useState("");
+  const [stack, setStack] = useState([{ view: "home" }]);
+  const [tab, setTab] = useState("casas");
+  const [toast, setToast] = useState(null);
+  const [loadError, setLoadError] = useState("");
+
+  const screen = stack[stack.length - 1];
+
+  useEffect(() => {
+    const unsub = window.__cecAuth.onAuthStateChanged((u) => setAuthUser(u));
+    return unsub;
+  }, []);
+
+  useEffect(() => {
+    if (!authUser) return;
+    (async () => {
+      try {
+        const c = await fetchCasas();
+        setCasas(c);
+      } catch (e) {
+        console.error("Error cargando casas:", e);
+        setLoadError("No se pudo conectar con la base de datos. Revisa tu conexión e intenta de nuevo.");
+        setReady(true);
+        return;
+      }
+      setReady(true);
+    })();
+  }, [authUser]);
+
+  function mergeObjetos(lista) {
+    setObjetos((prev) => {
+      const mapa = new Map(prev.map((o) => [o.id, o]));
+      lista.forEach((o) => mapa.set(o.id, o));
+      return Array.from(mapa.values());
+    });
+  }
+
+  async function abrirCasa(casaId) {
+    push({ view: "casa", casaId });
+    setErrorCasa("");
+    setCargandoObjetos(true);
+    try {
+      const lista = await fetchObjetosDeCasa(casaId);
+      mergeObjetos(lista);
+      // Autocorrección: si el total guardado en la casa no coincide con lo real, lo arreglamos.
+      const casaActual = casas.find((c) => c.id === casaId);
+      if (casaActual && casaActual.totalObjetos !== lista.length) {
+        setCasas((prev) => prev.map((c) => (c.id === casaId ? { ...c, totalObjetos: lista.length } : c)));
+        try {
+          await window.__cecDb.collection("casas").doc(casaId).update({ totalObjetos: lista.length });
+        } catch (e) { console.error("No se pudo corregir el contador de la casa:", e); }
+      }
+    } catch (e) {
+      console.error(e);
+      setErrorCasa("No se pudieron cargar los objetos de esta casa. Detalle: " + (e && e.message ? e.message : String(e)));
+    }
+    setCargandoObjetos(false);
+  }
+
+  async function abrirCatalogoInterno() {
+    setTab("catalogo");
+    setCargandoObjetos(true);
+    try {
+      const lista = await fetchObjetosPublicados();
+      mergeObjetos(lista);
+    } catch (e) { console.error(e);
+      notify("No se pudo cargar el catálogo.");
+    }
+    setCargandoObjetos(false);
+  }
+
+  function notify(msg) {
+    setToast(msg);
+    window.clearTimeout(notify._t);
+    notify._t = window.setTimeout(() => setToast(null), 2200);
+  }
+
+  function push(view) { setStack((s) => [...s, view]); }
+  function pop() { setStack((s) => (s.length > 1 ? s.slice(0, -1) : s)); }
+  function goHome() { setStack([{ view: "home" }]); }
+
+  async function crearCasa(nombre, zona) {
+    try {
+      const ownerId = authUser.uid;
+      const id = await addCasaDoc({ nombre, zona, ownerId, totalObjetos: 0 });
+      setCasas((prev) => [{ id, nombre, zona, ownerId, totalObjetos: 0, createdAt: Date.now() }, ...prev]);
+      notify("Casa creada");
+      pop();
+    } catch (e) { console.error(e);
+      notify("No se pudo guardar la casa. Intenta de nuevo.");
+    }
+  }
+
+  async function crearObjeto(casaId, categoria, data) {
+    const base = { casaId, categoria, publicado: false, vendido: false, ...data };
+    try {
+      const id = await addObjetoDoc(base);
+      setObjetos((prev) => [{ id, ...base, createdAt: Date.now() }, ...prev]);
+      setCasas((prev) => prev.map((c) => (c.id === casaId ? { ...c, totalObjetos: (c.totalObjetos || 0) + 1 } : c)));
+      try {
+        await window.__cecDb.collection("casas").doc(casaId).update({
+          totalObjetos: firebase.firestore.FieldValue.increment(1),
+        });
+      } catch (e) { console.error("No se pudo actualizar el contador de la casa:", e); }
+      notify("Objeto guardado");
+      pop();
+    } catch (e) { console.error(e);
+      notify("No se pudo guardar el objeto. Intenta de nuevo.");
+    }
+  }
+
+  async function actualizarObjeto(id, patch) {
+    setObjetos((prev) => prev.map((o) => (o.id === id ? { ...o, ...patch } : o)));
+    try {
+      await updateObjetoDoc(id, patch);
+    } catch (e) { console.error(e);
+      notify("No se pudo guardar el cambio. Intenta de nuevo.");
+    }
+  }
+
+  async function eliminarObjeto(id) {
+    const objetoActual = objetos.find((o) => o.id === id);
+    try {
+      await deleteObjetoDoc(id);
+      setObjetos((prev) => prev.filter((o) => o.id !== id));
+      if (objetoActual) {
+        setCasas((prev) => prev.map((c) => (c.id === objetoActual.casaId ? { ...c, totalObjetos: Math.max(0, (c.totalObjetos || 1) - 1) } : c)));
+        try {
+          await window.__cecDb.collection("casas").doc(objetoActual.casaId).update({
+            totalObjetos: firebase.firestore.FieldValue.increment(-1),
+          });
+        } catch (e) { console.error("No se pudo actualizar el contador de la casa:", e); }
+      }
+      notify("Objeto eliminado");
+      pop();
+    } catch (e) { console.error(e);
+      notify("No se pudo eliminar. Intenta de nuevo.");
+    }
+  }
+
+  async function eliminarCasa(id) {
+    try {
+      await deleteCasaDoc(id);
+      setCasas((prev) => prev.filter((c) => c.id !== id));
+      setObjetos((prev) => prev.filter((o) => o.casaId !== id));
+      notify("Casa eliminada");
+      goHome();
+    } catch (e) { console.error(e);
+      notify("No se pudo eliminar la casa. Intenta de nuevo.");
+    }
+  }
+
+  if (authUser === undefined) {
+    return (
+      <div className="cec-loading">
+        <div className="cec-loading-badge">🏠</div>
+        <p>Verificando acceso…</p>
+      </div>
+    );
+  }
+
+  if (authUser === null) {
+    return <Login />;
+  }
+
+  if (!ready) {
+    return (
+      <div className="cec-loading">
+        <div className="cec-loading-badge">🏠</div>
+        <p>Abriendo el archivador…</p>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="cec-loading">
+        <div className="cec-loading-badge">⚠️</div>
+        <p style={{maxWidth: "28ch", textAlign: "center"}}>{loadError}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="cec-screen">
+      {toast && <div className="cec-toast">{toast}</div>}
+
+      {screen.view === "home" && (
+        <Home
+          casas={casas}
+          objetos={objetos}
+          tab={tab}
+          onTabCasas={() => setTab("casas")}
+          onTabCatalogo={abrirCatalogoInterno}
+          onTabIntereses={() => setTab("intereses")}
+          onTabSolicitudes={() => setTab("solicitudes")}
+          cargando={cargandoObjetos}
+          currentUid={authUser.uid}
+          isAdmin={authUser.uid === ADMIN_UID}
+          onOpenCasa={abrirCasa}
+          onNuevaCasa={() => push({ view: "nuevaCasa" })}
+          onAbrirObjeto={(id) => push({ view: "objeto", objetoId: id, readOnly: true })}
+        />
+      )}
+
+      {screen.view === "nuevaCasa" && <NuevaCasa onBack={pop} onCrear={crearCasa} />}
+
+      {screen.view === "casa" && (
+        <CasaView
+          casa={casas.find((c) => c.id === screen.casaId)}
+          objetos={objetos.filter((o) => o.casaId === screen.casaId)}
+          cargando={cargandoObjetos}
+          error={errorCasa}
+          onReintentar={() => abrirCasa(screen.casaId)}
+          onBack={pop}
+          onHome={goHome}
+          onCategoria={(cat) => push({ view: "categoria", casaId: screen.casaId, categoria: cat })}
+          onEliminarCasa={() => eliminarCasa(screen.casaId)}
+        />
+      )}
+
+      {screen.view === "categoria" && (
+        <CategoriaView
+          categoria={screen.categoria}
+          objetos={objetos.filter((o) => o.casaId === screen.casaId && o.categoria === screen.categoria)}
+          onBack={pop}
+          onAbrir={(id) => push({ view: "objeto", objetoId: id, readOnly: false })}
+          onNuevo={() => push({ view: "nuevoObjeto", casaId: screen.casaId, categoria: screen.categoria })}
+        />
+      )}
+
+      {screen.view === "nuevoObjeto" && (
+        <ObjetoForm
+          categoria={screen.categoria}
+          onBack={pop}
+          onGuardar={(data) => crearObjeto(screen.casaId, screen.categoria, data)}
+        />
+      )}
+
+      {screen.view === "editarObjeto" && (
+        <ObjetoForm
+          categoria={screen.categoria}
+          existente={objetos.find((o) => o.id === screen.objetoId)}
+          onBack={pop}
+          onGuardar={(data) => {
+            actualizarObjeto(screen.objetoId, data);
+            notify("Cambios guardados");
+            pop();
+          }}
+        />
+      )}
+
+      {screen.view === "objeto" && (
+        <ObjetoFicha
+          objeto={objetos.find((o) => o.id === screen.objetoId)}
+          readOnly={!!screen.readOnly}
+          onBack={pop}
+          onUpdate={(patch) => actualizarObjeto(screen.objetoId, patch)}
+          onDelete={() => eliminarObjeto(screen.objetoId)}
+          onEditar={() => {
+            const o = objetos.find((x) => x.id === screen.objetoId);
+            push({ view: "editarObjeto", objetoId: screen.objetoId, categoria: o.categoria, casaId: o.casaId });
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+/* ---------- shared bits ---------- */
+
+function Header({ title, onBack, onHome, right }) {
+  return (
+    <div className="cec-header">
+      {onBack ? (
+        <button className="cec-iconbtn" onClick={onBack} aria-label="Volver">←</button>
+      ) : (
+        <span className="cec-iconbtn cec-iconbtn--ghost" />
+      )}
+      <div className="cec-header-title" onClick={onHome} role={onHome ? "button" : undefined}>{title}</div>
+      <div className="cec-header-right">{right}</div>
+    </div>
+  );
+}
+
+function EmptyState({ icon, title, hint, actionLabel, onAction }) {
+  return (
+    <div className="cec-empty">
+      <div className="cec-empty-icon">{icon}</div>
+      <p className="cec-empty-title">{title}</p>
+      {hint && <p className="cec-empty-hint">{hint}</p>}
+      {actionLabel && <button className="cec-btn cec-btn--primary" onClick={onAction}>{actionLabel}</button>}
+    </div>
+  );
+}
+
+/* ---------- login ---------- */
+
+function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [err, setErr] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [recuperando, setRecuperando] = useState(false);
+  const [recuperado, setRecuperado] = useState(false);
+
+  async function entrar() {
+    setErr("");
+    setBusy(true);
+    try {
+      await window.__cecAuth.signInWithEmailAndPassword(email.trim(), password);
+    } catch (e) {
+      setErr("Correo o contraseña incorrectos.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function recuperarContrasena() {
+    if (!email.trim()) {
+      setErr("Escribe tu correo arriba primero, y luego dale a \"Olvidé mi contraseña\".");
+      return;
+    }
+    setErr("");
+    setBusy(true);
+    try {
+      await window.__cecAuth.sendPasswordResetEmail(email.trim());
+      setRecuperado(true);
+    } catch (e) {
+      setErr("No se pudo enviar el correo. Revisa que el correo esté bien escrito.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="cec-screen">
+    <div className="cec-form" style={{paddingTop: "80px"}}>
+      <div className="cec-hero-tab" style={{margin: "0 auto 10px"}}>🔒</div>
+      <h1 style={{fontFamily:"'Fraunces',serif", textAlign:"center", fontSize:"24px", margin:"0 0 20px"}}>Acceso de administración</h1>
+      <label className="cec-field">
+        <span>Correo</span>
+        <input type="email" autoFocus value={email} onChange={(e) => setEmail(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && entrar()} />
+      </label>
+      <label className="cec-field">
+        <span>Contraseña</span>
+        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && entrar()} />
+      </label>
+      {err && <p className="cec-error-text">{err}</p>}
+      {recuperado && <p className="cec-note" style={{color:"var(--moss)"}}>✅ Te mandamos un correo con instrucciones para poner una nueva contraseña.</p>}
+      <button className="cec-btn cec-btn--primary cec-btn--block" disabled={busy || !email || !password} onClick={entrar}>
+        {busy ? "Entrando…" : "Entrar"}
+      </button>
+      <button className="cec-interes-alt-btn" style={{background:"none", border:"none", color:"var(--ink-soft)", fontSize:"12.5px", textDecoration:"underline", cursor:"pointer", marginTop:"10px"}} onClick={recuperarContrasena} disabled={busy}>
+        ¿Olvidaste tu contraseña?
+      </button>
+      <p className="cec-note" style={{textAlign:"center", marginTop:"18px"}}>
+        ¿Quieres vender tus objetos aquí también?<br />
+        <a href="mailto:infocasaencasa@gmail.com?subject=Quiero%20vender%20en%20Casa%20en%20Casa&body=Hola%2C%20me%20gustar%C3%ADa%20crear%20mi%20propia%20casa%20para%20vender%20objetos.%20Mi%20correo%20es%3A%20" style={{color:"var(--moss)", fontWeight:600}}>
+          Escríbenos a infocasaencasa@gmail.com
+        </a>
+      </p>
+    </div>
+    </div>
+  );
+}
+
+/* ---------- intereses recibidos ---------- */
+
+function InteresesTab({ isAdmin, currentUid }) {
+  const [cargando, setCargando] = useState(true);
+  const [intereses, setIntereses] = useState([]);
+  const [err, setErr] = useState("");
+
+  useEffect(() => {
+    (async () => {
+      try {
+        let query = window.__cecDb.collection("intereses");
+        if (!isAdmin) query = query.where("ownerId", "==", currentUid);
+        const snap = await query.get();
+        const lista = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+          .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        setIntereses(lista);
+      } catch (e) {
+        setErr("No se pudo cargar la lista de intereses.");
+      }
+      setCargando(false);
+    })();
+  }, [isAdmin, currentUid]);
+
+  if (cargando) return <p className="cec-note" style={{padding:"20px"}}>Cargando…</p>;
+  if (err) return <p className="cec-error-text" style={{padding:"20px"}}>{err}</p>;
+
+  if (intereses.length === 0) {
+    return (
+      <EmptyState icon="📨" title="Todavía no hay ningún interés"
+        hint="Cuando alguien mande sus datos por un objeto publicado, va a aparecer aquí." />
+    );
+  }
+
+  return (
+    <div className="cec-form">
+      {intereses.map((it) => (
+        <div key={it.id} style={{background:"var(--card)", border:"1px solid var(--paper-line)", borderRadius:"12px", padding:"14px"}}>
+          <div style={{fontWeight:600, fontSize:"14.5px", marginBottom:"4px"}}>{it.objetoNombre || "Objeto"}</div>
+          <div className="cec-note" style={{marginBottom:"8px"}}>
+            {it.casaNombre ? it.casaNombre + " · " : ""}{new Date(it.createdAt).toLocaleString("es-MX")}
+          </div>
+          <div style={{fontSize:"13.5px", lineHeight:1.6}}>
+            <div><strong>{it.nombre}</strong></div>
+            <div>✉️ <a href={"mailto:" + it.correo}>{it.correo}</a></div>
+            {it.telefono && <div>📞 {it.telefono}</div>}
+            {it.mensaje && <div style={{marginTop:"6px", color:"var(--ink-soft)"}}>"{it.mensaje}"</div>}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ---------- solicitudes de vendedor ---------- */
+
+function SolicitudesTab() {
+  const [cargando, setCargando] = useState(true);
+  const [solicitudes, setSolicitudes] = useState([]);
+  const [err, setErr] = useState("");
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const snap = await window.__cecDb.collection("solicitudesVendedor").get();
+        const lista = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+          .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        setSolicitudes(lista);
+      } catch (e) {
+        console.error(e);
+        setErr("No se pudo cargar la lista de solicitudes.");
+      }
+      setCargando(false);
+    })();
+  }, []);
+
+  if (cargando) return <p className="cec-note" style={{padding:"20px"}}>Cargando…</p>;
+  if (err) return <p className="cec-error-text" style={{padding:"20px"}}>{err}</p>;
+
+  if (solicitudes.length === 0) {
+    return (
+      <EmptyState icon="💼" title="Todavía no hay solicitudes para vender"
+        hint="Cuando alguien pida darse de alta como vendedor desde el catálogo, va a aparecer aquí." />
+    );
+  }
+
+  return (
+    <div className="cec-form">
+      {solicitudes.map((s) => (
+        <div key={s.id} style={{background:"var(--card)", border:"1px solid var(--paper-line)", borderRadius:"12px", padding:"14px"}}>
+          <div style={{fontWeight:600, fontSize:"14.5px", marginBottom:"4px"}}>{s.nombre}</div>
+          <div className="cec-note" style={{marginBottom:"8px"}}>
+            {new Date(s.createdAt).toLocaleString("es-MX")}
+          </div>
+          <div style={{fontSize:"13.5px", lineHeight:1.6}}>
+            <div>✉️ <a href={"mailto:" + s.correo}>{s.correo}</a></div>
+            {s.telefono && <div>📞 {s.telefono}</div>}
+            {s.motivo && <div style={{marginTop:"6px", color:"var(--ink-soft)"}}>"{s.motivo}"</div>}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ---------- home ---------- */
+
+function Home({ casas, objetos, tab, onTabCasas, onTabCatalogo, onTabIntereses, onTabSolicitudes, cargando, currentUid, isAdmin, onOpenCasa, onNuevaCasa, onAbrirObjeto }) {
+  const publicados = objetos.filter((o) => o.publicado && !o.vendido);
+  const misCasas = isAdmin ? casas : casas.filter((c) => c.ownerId === currentUid);
+  return (
+    <div>
+      <div className="cec-hero">
+        <div style={{display:"flex", justifyContent:"space-between", alignItems:"flex-start"}}>
+          <div className="cec-hero-tab">📁</div>
+          <button className="cec-btn cec-btn--ghost" style={{fontSize:"12px", padding:"7px 12px"}} onClick={() => window.__cecAuth.signOut()}>Cerrar sesión</button>
+        </div>
+        <h1>Casa en Casa</h1>
+        <p>Tu archivador digital para organizar, fotografiar y dar salida a lo que ya no usas.</p>
+      </div>
+
+      <div className="cec-segmented">
+        <button className={tab === "casas" ? "active" : ""} onClick={onTabCasas}>Mis casas</button>
+        <button className={tab === "catalogo" ? "active" : ""} onClick={onTabCatalogo}>Catálogo</button>
+        <button className={tab === "intereses" ? "active" : ""} onClick={onTabIntereses}>Intereses</button>
+        {isAdmin && <button className={tab === "solicitudes" ? "active" : ""} onClick={onTabSolicitudes}>Solicitudes</button>}
+      </div>
+
+      {tab === "intereses" && <InteresesTab isAdmin={isAdmin} currentUid={currentUid} />}
+      {tab === "solicitudes" && isAdmin && <SolicitudesTab />}
+
+      {tab === "casas" && (
+        <div className="cec-list">
+          {misCasas.length === 0 ? (
+            <EmptyState icon="📁" title="Todavía no tienes ninguna casa" hint="Crea el archivador de tu primera casa para empezar a organizar objetos." actionLabel="Crear una casa" onAction={onNuevaCasa} />
+          ) : (
+            misCasas.map((c, i) => {
+              const total = c.totalObjetos != null ? c.totalObjetos : 0;
+              return (
+                <button key={c.id} className={`cec-folder-card accent-${ACCENTS[i % ACCENTS.length]}`} onClick={() => onOpenCasa(c.id)}>
+                  <span className="cec-folder-tab" />
+                  <div className="cec-folder-card-body">
+                    <div className="cec-folder-card-title">{c.nombre}</div>
+                    <div className="cec-folder-card-sub">{c.zona ? c.zona + " · " : ""}{total} {total === 1 ? "objeto" : "objetos"}</div>
+                  </div>
+                  <span className="cec-chevron">›</span>
+                </button>
+              );
+            })
+          )}
+        </div>
+      )}
+
+      {tab === "catalogo" && (
+        cargando ? (
+          <p className="cec-note" style={{padding:"20px"}}>Cargando catálogo…</p>
+        ) : (
+          <div className="cec-grid">
+            {publicados.length === 0 ? (
+              <EmptyState icon="🗂️" title="Aún no hay objetos publicados" hint="Cuando publiques un objeto desde su ficha, aparecerá aquí como en un catálogo para compradores." />
+            ) : (
+              publicados.map((o) => <ObjetoCard key={o.id} objeto={o} onClick={() => onAbrirObjeto(o.id)} />)
+            )}
+          </div>
+        )
+      )}
+
+      {tab === "casas" && misCasas.length > 0 && (
+        <button className="cec-fab" onClick={onNuevaCasa} aria-label="Crear una casa">+</button>
+      )}
+    </div>
+  );
+}
+
+/* ---------- nueva casa ---------- */
+
+function NuevaCasa({ onBack, onCrear }) {
+  const [nombre, setNombre] = useState("");
+  const [zona, setZona] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  return (
+    <div>
+      <Header title="Crear una nueva casa" onBack={onBack} />
+      <div className="cec-form">
+        <label className="cec-field">
+          <span>Nombre de la casa</span>
+          <input autoFocus placeholder="Ej. Casa de mi madre" value={nombre} onChange={(e) => setNombre(e.target.value)} />
+        </label>
+        <label className="cec-field">
+          <span>Zona (opcional)</span>
+          <input placeholder="Ej. Coyoacán" value={zona} onChange={(e) => setZona(e.target.value)} />
+        </label>
+        <p className="cec-note">No pedimos dirección exacta ni ubicación GPS: solo lo necesario para identificar la casa.</p>
+        <button className="cec-btn cec-btn--primary cec-btn--block" disabled={!nombre.trim() || saving}
+          onClick={() => { setSaving(true); onCrear(nombre.trim(), zona.trim()); }}>
+          {saving ? "Guardando…" : "Guardar casa"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- casa view ---------- */
+
+function CasaView({ casa, objetos, cargando, error, onReintentar, onBack, onHome, onCategoria, onEliminarCasa }) {
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  if (!casa) {
+    return (<div><Header title="Casa en Casa" onBack={onBack} /><EmptyState icon="⚠️" title="Esta casa ya no existe" /></div>);
+  }
+  return (
+    <div>
+      <Header title={casa.nombre} onBack={onBack} onHome={onHome} />
+      <div className="cec-casa-sub">{casa.zona || "Sin zona registrada"}</div>
+
+      {error && (
+        <div style={{margin:"12px 20px", background:"var(--sold-soft)", border:"1px solid var(--sold)", borderRadius:"10px", padding:"14px"}}>
+          <p style={{margin:"0 0 10px", fontSize:"13.5px", color:"var(--sold)"}}>{error}</p>
+          <button className="cec-btn cec-btn--danger" style={{fontSize:"13px", padding:"8px 14px"}} onClick={onReintentar}>
+            Reintentar
+          </button>
+        </div>
+      )}
+      {cargando && !error && <p className="cec-note" style={{padding:"0 20px 12px"}}>Cargando objetos…</p>}
+
+      <div className="cec-grid cec-grid--folders">
+        {CATEGORIES.map((cat, i) => {
+          const count = objetos.filter((o) => o.categoria === cat.key).length;
+          return (
+            <button key={cat.key} className={`cec-cat-card accent-${ACCENTS[i % ACCENTS.length]}`} onClick={() => onCategoria(cat.key)}>
+              <span className="cec-cat-icon">{cat.icon}</span>
+              <span className="cec-cat-label">{cat.label}</span>
+              <span className="cec-cat-count">{count}</span>
+            </button>
+          );
+        })}
+      </div>
+      <div className="cec-danger-zone">
+        {!confirmDelete ? (
+          <button className="cec-link-danger" onClick={() => setConfirmDelete(true)}>Eliminar esta casa</button>
+        ) : (
+          <div className="cec-confirm">
+            <span>¿Eliminar "{casa.nombre}" y todos sus objetos?</span>
+            <div>
+              <button className="cec-btn cec-btn--ghost" onClick={() => setConfirmDelete(false)}>Cancelar</button>
+              <button className="cec-btn cec-btn--danger" onClick={onEliminarCasa}>Eliminar</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ---------- categoria view ---------- */
+
+function CategoriaView({ categoria, objetos, onBack, onAbrir, onNuevo }) {
+  const info = categoriaInfo(categoria);
+  return (
+    <div>
+      <Header title={`${info.icon} ${info.label}`} onBack={onBack} />
+      <div className="cec-grid">
+        {objetos.length === 0 ? (
+          <EmptyState icon={info.icon} title="Todavía no hay objetos aquí" hint="Añade el primer objeto de esta categoría." actionLabel="Añadir objeto" onAction={onNuevo} />
+        ) : (
+          objetos.map((o) => <ObjetoCard key={o.id} objeto={o} onClick={() => onAbrir(o.id)} />)
+        )}
+      </div>
+      {objetos.length > 0 && <button className="cec-fab" onClick={onNuevo} aria-label="Añadir objeto">+</button>}
+    </div>
+  );
+}
+
+function ObjetoCard({ objeto, onClick }) {
+  return (
+    <button className="cec-obj-card" onClick={onClick}>
+      <div className="cec-obj-photo">
+        {objeto.foto ? <img src={objeto.foto} alt={objeto.nombre} /> : <span>{categoriaInfo(objeto.categoria).icon}</span>}
+        {objeto.vendido && <span className="cec-badge cec-badge--sold">Vendido</span>}
+        {!objeto.vendido && objeto.publicado && <span className="cec-badge cec-badge--live">Publicado</span>}
+      </div>
+      <div className="cec-obj-info">
+        <div className="cec-obj-nombre">{objeto.nombre || "Sin nombre"}</div>
+        <div className="cec-obj-precio">{formatPrecio(objeto.precio)}</div>
+      </div>
+    </button>
+  );
+}
+
+/* ---------- objeto form ---------- */
+
+function ObjetoForm({ categoria, existente, onBack, onGuardar }) {
+  const info = categoriaInfo(categoria);
+  const esEdicion = !!existente;
+  const [foto, setFoto] = useState(existente ? existente.foto || null : null);
+  const [nombre, setNombre] = useState(existente ? existente.nombre || "" : "");
+  const [subcategoria, setSubcategoria] = useState(existente ? existente.subcategoria || "" : "");
+  const [ubicacion, setUbicacion] = useState(existente ? existente.ubicacion || "" : "");
+  const [precio, setPrecio] = useState(existente && existente.precio != null ? String(existente.precio) : "");
+  const [descripcion, setDescripcion] = useState(existente ? existente.descripcion || "" : "");
+  const [unidades, setUnidades] = useState(existente && existente.unidades != null ? String(existente.unidades) : "1");
+  const [busy, setBusy] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState("");
+  const fileRef = useRef(null);
+  const opcionesSub = SUBCATEGORIES[categoria];
+
+  async function handleFile(e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    setBusy(true); setErr("");
+    try {
+      const dataUrl = await compressImage(file);
+      setFoto(dataUrl);
+    } catch (e) { console.error(e);
+      setErr("No se pudo procesar la foto. Intenta con otra imagen.");
+    } finally { setBusy(false); }
+  }
+
+  function guardar() {
+    setSaving(true);
+    onGuardar({
+      foto,
+      nombre: nombre.trim(),
+      subcategoria: subcategoria.trim(),
+      ubicacion: ubicacion.trim(),
+      precio: precio ? Number(precio) : null,
+      descripcion: descripcion.trim(),
+      unidades: unidades ? Number(unidades) : 1,
+    });
+  }
+
+  return (
+    <div>
+      <Header title={esEdicion ? "Editar objeto" : `Añadir a ${info.label}`} onBack={onBack} />
+      <div className="cec-form">
+        <div className="cec-photo-picker" onClick={() => fileRef.current && fileRef.current.click()}>
+          {foto ? <img src={foto} alt="Vista previa" /> : (
+            <div className="cec-photo-placeholder"><span>{busy ? "Procesando…" : "📷 Tomar o subir foto"}</span></div>
+          )}
+          <input ref={fileRef} type="file" accept="image/*" hidden onChange={handleFile} />
+        </div>
+        {err && <p className="cec-error-text">{err}</p>}
+
+        <label className="cec-field"><span>Nombre del objeto</span>
+          <input autoFocus placeholder="Ej. Mesa auxiliar de madera" value={nombre} onChange={(e) => setNombre(e.target.value)} />
+        </label>
+        <label className="cec-field"><span>Subcategoría</span>
+          {opcionesSub ? (
+            <select value={subcategoria} onChange={(e) => setSubcategoria(e.target.value)}>
+              <option value="">Selecciona una subcategoría</option>
+              {opcionesSub.map((s) => <option key={s} value={s}>{s}</option>)}
+              <option value="Otra">Otra</option>
+            </select>
+          ) : (
+            <input placeholder="Ej. Mesas auxiliares" value={subcategoria} onChange={(e) => setSubcategoria(e.target.value)} />
+          )}
+        </label>
+        <label className="cec-field"><span>Ubicación en la casa</span>
+          <input placeholder="Ej. Sala" value={ubicacion} onChange={(e) => setUbicacion(e.target.value)} />
+        </label>
+        <label className="cec-field"><span>Precio (MXN)</span>
+          <input type="number" inputMode="numeric" placeholder="Ej. 1200" value={precio} onChange={(e) => setPrecio(e.target.value)} />
+        </label>
+        <label className="cec-field"><span>Descripción</span>
+          <textarea rows={3} placeholder="Estado, material, medidas…" value={descripcion} onChange={(e) => setDescripcion(e.target.value)} />
+        </label>
+        <label className="cec-field"><span>Unidades disponibles</span>
+          <input type="number" inputMode="numeric" min="1" placeholder="Ej. 1" value={unidades} onChange={(e) => setUnidades(e.target.value)} />
+        </label>
+
+        <button className="cec-btn cec-btn--primary cec-btn--block" disabled={!nombre.trim() || saving} onClick={guardar}>
+          {saving ? "Guardando…" : esEdicion ? "Guardar cambios" : "Guardar objeto"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- ficha del objeto ---------- */
+
+function ObjetoFicha({ objeto, readOnly, onBack, onUpdate, onDelete, onEditar }) {
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  if (!objeto) {
+    return (<div><Header title="Ficha" onBack={onBack} /><EmptyState icon="⚠️" title="Este objeto ya no existe" /></div>);
+  }
+  const info = categoriaInfo(objeto.categoria);
+  return (
+    <div>
+      <Header title="Ficha del objeto" onBack={onBack} />
+      <div className="cec-ficha-photo">
+        {objeto.foto ? <img src={objeto.foto} alt={objeto.nombre} /> : (
+          <div className="cec-photo-placeholder"><span>{info.icon}</span></div>
+        )}
+        {objeto.vendido && <span className="cec-badge cec-badge--sold cec-badge--float">Vendido</span>}
+        {!objeto.vendido && objeto.publicado && <span className="cec-badge cec-badge--live cec-badge--float">Publicado</span>}
+      </div>
+      <div className="cec-ficha-body">
+        <div className="cec-eyebrow">{info.icon} {info.label}{objeto.subcategoria ? ` · ${objeto.subcategoria}` : ""}</div>
+        <h2 className="cec-ficha-nombre">{objeto.nombre || "Sin nombre"}</h2>
+        <div className="cec-ficha-precio">{formatPrecio(objeto.precio)}</div>
+
+        {objeto.ubicacion && <div className="cec-ficha-row"><span>Ubicación</span><span>{objeto.ubicacion}</span></div>}
+        {objeto.descripcion && <div className="cec-ficha-block"><span className="cec-ficha-block-label">Descripción</span><p>{objeto.descripcion}</p></div>}
+        {objeto.unidades != null && <div className="cec-ficha-row"><span>Unidades disponibles</span><span>{objeto.unidades}</span></div>}
+
+        {!readOnly && (
+          <div className="cec-ficha-actions">
+            <button className="cec-btn cec-btn--ghost cec-btn--block" onClick={onEditar}>
+              ✏️ Editar objeto
+            </button>
+            <button className={`cec-btn ${objeto.publicado ? "cec-btn--ghost" : "cec-btn--primary"} cec-btn--block`}
+              onClick={() => onUpdate({ publicado: !objeto.publicado })} disabled={objeto.vendido}>
+              {objeto.publicado ? "Quitar de publicados" : "Publicar objeto"}
+            </button>
+            <button className="cec-btn cec-btn--ghost cec-btn--block" onClick={() => onUpdate({ vendido: !objeto.vendido })}>
+              {objeto.vendido ? "Marcar como disponible" : "Marcar como vendido"}
+            </button>
+            {!confirmDelete ? (
+              <button className="cec-link-danger" onClick={() => setConfirmDelete(true)}>Eliminar objeto</button>
+            ) : (
+              <div className="cec-confirm">
+                <span>¿Eliminar "{objeto.nombre}"?</span>
+                <div>
+                  <button className="cec-btn cec-btn--ghost" onClick={() => setConfirmDelete(false)}>Cancelar</button>
+                  <button className="cec-btn cec-btn--danger" onClick={onDelete}>Eliminar</button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+        {readOnly && <p className="cec-note">Estás viendo esta ficha como la vería un comprador en el catálogo.</p>}
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<div className="cec-app"><CasaEnCasa /></div>);
+</script>
+
+<script>
+  (function () {
+    try {
+      var source = document.getElementById("cec-source").textContent;
+      var compiled = Babel.transform(source, {
+        presets: [["react", { runtime: "classic" }]]
+      }).code;
+      var scriptEl = document.createElement("script");
+      scriptEl.textContent = compiled;
+      document.body.appendChild(scriptEl);
+    } catch (e) {
+      document.getElementById("root").innerHTML =
+        '<div style="padding:40px;font-family:sans-serif;color:#8B4444;">Error al preparar la app: ' + e.message + '</div>';
+    }
+  })();
+</script>
+</body>
+</html>
