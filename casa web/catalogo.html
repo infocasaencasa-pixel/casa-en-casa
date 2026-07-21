@@ -680,6 +680,17 @@ function SolicitudVendedor({ onClose }) {
   const [reenviado, setReenviado] = useState(false);
   const [revisandoSesion, setRevisandoSesion] = useState(true);
   const [yaListo, setYaListo] = useState(false);
+  const [cupoPromo, setCupoPromo] = useState(null); // null = aún no sabemos, número = restantes
+  const [ganadoPromo, setGanadoPromo] = useState(false);
+
+  useEffect(() => {
+    window.__cecDb.collection("config").doc("promoVendedores").get()
+      .then((doc) => {
+        const usados = doc.exists ? (doc.data().usados || 0) : 0;
+        setCupoPromo(Math.max(0, 20 - usados));
+      })
+      .catch(() => setCupoPromo(null));
+  }, []);
 
   useEffect(() => {
     const u = window.__cecAuth.currentUser;
@@ -787,6 +798,22 @@ function SolicitudVendedor({ onClose }) {
         return;
       }
       const uid = window.__cecAuth.currentUser.uid;
+
+      // Intentamos primero la promoción de inauguración (primeras 20 cuentas gratis)
+      const resPromo = await fetch("/api/registrar-promo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uid }),
+      });
+      const dataPromo = await resPromo.json();
+      if (dataPromo.ok) {
+        setCupoPromo(dataPromo.restantes);
+        setGanadoPromo(true);
+        setEnviando(false);
+        return;
+      }
+
+      // Si ya no hay lugares en la promoción, seguimos con el pago normal
       const res = await fetch("/api/crear-sesion-pago", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -835,6 +862,15 @@ function SolicitudVendedor({ onClose }) {
 
       {revisandoSesion ? (
         <p className="cec-note" style={{padding:"20px"}}>Revisando tu sesión…</p>
+      ) : ganadoPromo ? (
+        <div className="cec-form">
+          <div className="cat-interes-ok">
+            🎉 ¡Felicidades! Entraste en la promoción de inauguración — tu cuenta quedó activada gratis, sin pagar nada. Ya puedes iniciar sesión en tu panel y crear tu Casa.
+          </div>
+          <a className="cat-btn cat-btn--primary cat-btn--block" href="/" style={{display:"block", textAlign:"center", textDecoration:"none"}}>
+            Ir a mi panel
+          </a>
+        </div>
       ) : yaListo ? (
         <div className="cec-form">
           <div className="cat-interes-ok">
@@ -885,6 +921,11 @@ function SolicitudVendedor({ onClose }) {
         </div>
       ) : (
       <div className="cec-form">
+        {cupoPromo != null && cupoPromo > 0 && (
+          <div className="cat-interes-ok" style={{marginBottom:"4px"}}>
+            🎉 Promoción de inauguración: las primeras 20 cuentas se registran gratis. ¡Quedan {cupoPromo} lugares!
+          </div>
+        )}
         <h2 style={{fontFamily:"'Fraunces',serif", fontSize:"19px", margin:"0 0 4px"}}>Pack de lanzamiento</h2>
         <p className="cec-note">Crea tu cuenta y publica hasta 500 artículos por $200 MXN, pago único.</p>
 
@@ -1049,6 +1090,7 @@ function Catalogo() {
   const [comprador, setComprador] = useState(null);
   const [mostrarAuth, setMostrarAuth] = useState(false);
   const [mostrarVender, setMostrarVender] = useState(false);
+  const [cerrandoSesion, setCerrandoSesion] = useState(false);
 
   const [ready, setReady] = useState(false);
   const [cargandoCategoria, setCargandoCategoria] = useState(false);
@@ -1221,7 +1263,10 @@ function Catalogo() {
 
       {vista === "cuenta" ? (
         <div className="cec-form">
-          <button className="cec-link-danger" onClick={() => window.__cecAuth.signOut()}>Cerrar sesión</button>
+          <button className="cec-link-danger" disabled={cerrandoSesion}
+            onClick={() => { setCerrandoSesion(true); window.__cecAuth.signOut(); }}>
+            {cerrandoSesion ? "Cerrando…" : "Cerrar sesión"}
+          </button>
           <h2 style={{fontFamily:"'Fraunces',serif", fontSize:"18px", margin:"10px 0 0"}}>❤️ Mis favoritos</h2>
           {misFavoritos.length === 0 ? (
             <p className="cec-note">Todavía no has marcado ningún favorito. Toca el corazón en cualquier objeto para guardarlo aquí.</p>
