@@ -666,6 +666,7 @@ function InteresForm({ objeto, casa, comprador }) {
 }
 
 function SolicitudVendedor({ onClose }) {
+  const [modo, setModo] = useState("crear"); // crear | entrar
   const [nombre, setNombre] = useState("");
   const [correo, setCorreo] = useState("");
   const [telefono, setTelefono] = useState("");
@@ -673,9 +674,62 @@ function SolicitudVendedor({ onClose }) {
   const [acepto, setAcepto] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [err, setErr] = useState("");
+  const [correoExistente, setCorreoExistente] = useState(false);
+  const [recuperado, setRecuperado] = useState(false);
+  const [esperandoVerificacion, setEsperandoVerificacion] = useState(false);
+  const [reenviado, setReenviado] = useState(false);
+  const [revisandoSesion, setRevisandoSesion] = useState(true);
+  const [yaListo, setYaListo] = useState(false);
 
-  async function crearCuentaYPagar() {
+  useEffect(() => {
+    const u = window.__cecAuth.currentUser;
+    if (!u) {
+      setRevisandoSesion(false);
+      return;
+    }
+    (async () => {
+      if (!u.emailVerified) {
+        setCorreo(u.email || "");
+        setEsperandoVerificacion(true);
+        setRevisandoSesion(false);
+        return;
+      }
+      try {
+        const doc = await window.__cecDb.collection("vendedores").doc(u.uid).get();
+        if (doc.exists && doc.data().haPagado) {
+          setYaListo(true);
+        } else {
+          setCorreo(u.email || "");
+          setModo("entrar");
+        }
+      } catch (e) {
+        // si algo falla revisando, mostramos el formulario normal como respaldo
+      }
+      setRevisandoSesion(false);
+    })();
+  }, []);
+
+  async function recuperarContrasena() {
+    setEnviando(true);
+    try {
+      const metodos = await window.__cecAuth.fetchSignInMethodsForEmail(correo.trim());
+      if (metodos.length === 0) {
+        setErr("No encontramos ninguna cuenta con ese correo. Revisa que esté bien escrito.");
+        setEnviando(false);
+        return;
+      }
+      await window.__cecAuth.sendPasswordResetEmail(correo.trim());
+      setRecuperado(true);
+    } catch (e) {
+      setErr("No se pudo enviar el correo de recuperación. Revisa que el correo esté bien escrito.");
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  async function crearCuenta() {
     setErr("");
+    setCorreoExistente(false);
     setEnviando(true);
     try {
       // 1) Guardamos la solicitud (para tu registro interno, igual que antes)
@@ -696,7 +750,43 @@ function SolicitudVendedor({ onClose }) {
         createdAt: Date.now(),
       });
 
-      // 4) Pedimos la sesión de pago y mandamos al usuario a pagar en Stripe
+      // 4) Mandamos el correo de verificación y esperamos a que lo confirme
+      await cred.user.sendEmailVerification();
+      setEsperandoVerificacion(true);
+    } catch (e) {
+      const esCorreoExistente = e && e.code === "auth/email-already-in-use";
+      setCorreoExistente(esCorreoExistente);
+      setErr(esCorreoExistente
+        ? "Ya existe una cuenta con ese correo."
+        : "No se pudo crear tu cuenta. Intenta de nuevo.");
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  async function reenviarVerificacion() {
+    setEnviando(true);
+    try {
+      await window.__cecAuth.currentUser.sendEmailVerification();
+      setReenviado(true);
+    } catch (e) {
+      setErr("No se pudo reenviar el correo. Intenta de nuevo en un momento.");
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  async function yaConfirme() {
+    setErr("");
+    setEnviando(true);
+    try {
+      await window.__cecAuth.currentUser.reload();
+      if (!window.__cecAuth.currentUser.emailVerified) {
+        setErr("Todavía no detectamos la confirmación. Revisa tu bandeja (o spam) y da clic al link antes de continuar.");
+        setEnviando(false);
+        return;
+      }
+      const uid = window.__cecAuth.currentUser.uid;
       const res = await fetch("/api/crear-sesion-pago", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -708,10 +798,30 @@ function SolicitudVendedor({ onClose }) {
       }
       window.location.href = data.url;
     } catch (e) {
-      const msg = (e && e.code === "auth/email-already-in-use")
-        ? "Ya existe una cuenta con ese correo. Inicia sesión en tu panel en vez de crear una nueva."
-        : "No se pudo crear tu cuenta o iniciar el pago. Intenta de nuevo.";
-      setErr(msg);
+      setErr("No se pudo iniciar el pago. Intenta de nuevo.");
+      setEnviando(false);
+    }
+  }
+
+  async function entrarConCuentaExistente() {
+    setErr("");
+    setEnviando(true);
+    try {
+      const cred = await window.__cecAuth.signInWithEmailAndPassword(correo.trim(), password);
+      if (!cred.user.emailVerified) {
+        setEsperandoVerificacion(true);
+        setEnviando(false);
+        return;
+      }
+      const doc = await window.__cecDb.collection("vendedores").doc(cred.user.uid).get();
+      if (doc.exists && doc.data().haPagado) {
+        setErr("¡Tu cuenta ya está activa! Inicia sesión en tu panel de administración con este mismo correo y contraseña.");
+        setEnviando(false);
+        return;
+      }
+      await yaConfirme();
+    } catch (e) {
+      setErr("Correo o contraseña incorrectos.");
       setEnviando(false);
     }
   }
@@ -723,6 +833,57 @@ function SolicitudVendedor({ onClose }) {
         <div className="cat-header-title">Quiero vender</div>
       </div>
 
+      {revisandoSesion ? (
+        <p className="cec-note" style={{padding:"20px"}}>Revisando tu sesión…</p>
+      ) : yaListo ? (
+        <div className="cec-form">
+          <div className="cat-interes-ok">
+            ✅ Ya tienes una cuenta de vendedor activa. Ve a tu panel de administración para crear tu Casa y publicar objetos.
+          </div>
+          <a className="cat-btn cat-btn--primary cat-btn--block" href="/" style={{display:"block", textAlign:"center", textDecoration:"none"}}>
+            Ir a mi panel
+          </a>
+        </div>
+      ) : esperandoVerificacion ? (
+        <div className="cec-form">
+          <div className="cat-interes-ok">
+            📩 Te mandamos un correo a <strong>{correo.trim()}</strong> con un link para confirmar tu cuenta.
+          </div>
+          <p className="cec-note">Ábrelo, dale clic al link, y luego regresa aquí y dale a "Ya lo confirmé" para continuar con el pago.</p>
+          {err && <p className="cec-error-text">{err}</p>}
+          {reenviado && <p className="cec-note" style={{color:"var(--moss)"}}>✅ Te lo volvimos a mandar.</p>}
+          <button className="cat-btn cat-btn--primary cat-btn--block" disabled={enviando} onClick={yaConfirme}>
+            {enviando ? "Comprobando…" : "Ya lo confirmé, continuar"}
+          </button>
+          <button className="cat-interes-alt" style={{background:"none", border:"none", cursor:"pointer"}} onClick={reenviarVerificacion} disabled={enviando}>
+            No me llegó, reenviar correo
+          </button>
+        </div>
+      ) : modo === "entrar" ? (
+        <div className="cec-form">
+          <h2 style={{fontFamily:"'Fraunces',serif", fontSize:"19px", margin:"0 0 4px"}}>Ya tengo cuenta</h2>
+          <p className="cec-note">Inicia sesión para continuar con tu pago o revisar el estado de tu cuenta.</p>
+
+          <label className="cec-field"><span>Tu correo</span>
+            <input type="email" value={correo} onChange={(e) => setCorreo(e.target.value)} placeholder="tucorreo@ejemplo.com" />
+          </label>
+          <label className="cec-field"><span>Tu contraseña</span>
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          </label>
+
+          {err && <p className="cec-error-text">{err}</p>}
+          {recuperado && <p className="cec-note" style={{color:"var(--moss)"}}>✅ Te mandamos un correo con instrucciones para poner una nueva contraseña.</p>}
+          <button className="cat-btn cat-btn--primary cat-btn--block" disabled={!correo.trim() || !password || enviando} onClick={entrarConCuentaExistente}>
+            {enviando ? "Un momento…" : "Entrar y continuar"}
+          </button>
+          <button className="cat-interes-alt" style={{background:"none", border:"none", cursor:"pointer"}} onClick={recuperarContrasena} disabled={enviando || !correo.trim()}>
+            ¿Olvidaste tu contraseña?
+          </button>
+          <button className="cat-interes-alt" style={{background:"none", border:"none", cursor:"pointer"}} onClick={() => { setModo("crear"); setErr(""); }}>
+            No tengo cuenta, crear una
+          </button>
+        </div>
+      ) : (
       <div className="cec-form">
         <h2 style={{fontFamily:"'Fraunces',serif", fontSize:"19px", margin:"0 0 4px"}}>Pack de lanzamiento</h2>
         <p className="cec-note">Crea tu cuenta y publica hasta 500 artículos por $200 MXN, pago único.</p>
@@ -758,14 +919,24 @@ function SolicitudVendedor({ onClose }) {
         </label>
 
         {err && <p className="cec-error-text">{err}</p>}
+        {recuperado && <p className="cec-note" style={{color:"var(--moss)"}}>✅ Te mandamos un correo con instrucciones para poner una nueva contraseña.</p>}
+        {correoExistente && !recuperado && (
+          <button className="cat-btn cat-btn--ghost cat-btn--block" onClick={recuperarContrasena} disabled={enviando}>
+            ¿Olvidaste tu contraseña? Recupérala aquí
+          </button>
+        )}
         <button
           className="cat-btn cat-btn--primary cat-btn--block"
           disabled={!acepto || !nombre.trim() || !correo.trim() || password.length < 6 || enviando}
-          onClick={crearCuentaYPagar}
+          onClick={crearCuenta}
         >
-          {enviando ? "Un momento…" : "Crear mi cuenta y pagar $200 MXN"}
+          {enviando ? "Un momento…" : "Crear mi cuenta"}
+        </button>
+        <button className="cat-interes-alt" style={{background:"none", border:"none", cursor:"pointer"}} onClick={() => { setModo("entrar"); setErr(""); }}>
+          Ya tengo cuenta, iniciar sesión
         </button>
       </div>
+      )}
     </div>
   );
 }
@@ -817,6 +988,12 @@ function BuyerAuth({ onClose }) {
     }
     setErr(""); setBusy(true);
     try {
+      const metodos = await window.__cecAuth.fetchSignInMethodsForEmail(email.trim());
+      if (metodos.length === 0) {
+        setErr("No encontramos ninguna cuenta con ese correo. Revisa que esté bien escrito.");
+        setBusy(false);
+        return;
+      }
       await window.__cecAuth.sendPasswordResetEmail(email.trim());
       setRecuperado(true);
     } catch (e) {
@@ -1158,4 +1335,4 @@ root.render(<div className="cat-app"><Catalogo /></div>);
   })();
 </script>
 </body>
-</html> 
+</html>
