@@ -20,6 +20,7 @@ export async function onRequestPost(context) {
 
     const params = new URLSearchParams();
     params.append("mode", "payment");
+    params.append("payment_method_types[0]", "card");
     params.append("line_items[0][price]", PRICE_ID);
     params.append("line_items[0][quantity]", "1");
     params.append("customer_email", correo);
