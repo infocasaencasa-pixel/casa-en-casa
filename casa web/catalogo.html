@@ -4,6 +4,10 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
 <title>Catálogo · Casa en Casa</title>
+<link rel="manifest" href="/manifest-catalogo.json">
+<meta name="theme-color" content="#4B6350">
+<link rel="icon" href="/icon-catalogo-192.png">
+<link rel="apple-touch-icon" href="/icon-catalogo-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -543,6 +547,10 @@ async function fetchPublicadosDeCategoria(categoria) {
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }))
     .filter((o) => !o.vendido)
     .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+}
+async function fetchFotoCompleta(objetoId) {
+  const doc = await window.__cecDb.collection("fotos").doc(objetoId).get();
+  return doc.exists ? doc.data().data : null;
 }
 async function fetchObjetosPorIds(ids) {
   if (!ids || ids.length === 0) return [];
@@ -1101,8 +1109,20 @@ function Catalogo() {
   const [filtro, setFiltro] = useState(CATEGORIES[0].key);
   const [subFiltro, setSubFiltro] = useState("");
   const [seleccionado, setSeleccionado] = useState(null);
+  const [fotoCompletaDetalle, setFotoCompletaDetalle] = useState(null);
+  const [cargandoFotoDetalle, setCargandoFotoDetalle] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [historial, setHistorial] = useState([]);
+
+  useEffect(() => {
+    if (!seleccionado || !seleccionado.foto) { setFotoCompletaDetalle(null); return; }
+    setFotoCompletaDetalle(null);
+    setCargandoFotoDetalle(true);
+    fetchFotoCompleta(seleccionado.id)
+      .then((data) => setFotoCompletaDetalle(data))
+      .catch(() => {})
+      .finally(() => setCargandoFotoDetalle(false));
+  }, [seleccionado && seleccionado.id]);
 
   useEffect(() => {
     const unsub = window.__cecAuth.onAuthStateChanged(async (u) => {
@@ -1223,7 +1243,7 @@ function Catalogo() {
           </button>
         </div>
         <div className="cat-detail-photo">
-          {o.foto ? <img src={o.foto} alt={o.nombre} /> : <span>{info.icon}</span>}
+          {(fotoCompletaDetalle || o.foto) ? <img src={fotoCompletaDetalle || o.foto} alt={o.nombre} style={cargandoFotoDetalle ? {filter:"blur(2px)"} : undefined} /> : <span>{info.icon}</span>}
         </div>
         <div className="cat-detail-body">
           <div className="cat-eyebrow">{info.icon} {info.label}{o.subcategoria ? " · " + o.subcategoria : ""}</div>
@@ -1379,6 +1399,13 @@ root.render(<div className="cat-app"><Catalogo /></div>);
         '<div style="padding:40px;font-family:sans-serif;color:#8B4444;">Error al preparar el catálogo: ' + e.message + '</div>';
     }
   })();
+</script>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    });
+  }
 </script>
 </body>
 </html>
