@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /catalogo.html
+Disallow: /
+Disallow: /pago-exitoso.html
+Disallow: /pago-cancelado.html
+
+Sitemap: https://casaencasamx.com/sitemap.xml
