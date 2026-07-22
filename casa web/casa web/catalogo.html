@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+<title>Catálogo de muebles y artículos usados en CDMX · Casa en Casa</title>
+<meta name="description" content="Compra y vende muebles, electrodomésticos, decoración y más artículos usados de segunda mano en la Ciudad de México. Publica gratis o encuentra objetos con descuento cerca de ti." />
+<meta property="og:title" content="Casa en Casa — Muebles y artículos usados en CDMX" />
+<meta property="og:description" content="Catálogo de objetos de segunda vida en la Ciudad de México: muebles, cocina, electrodomésticos, decoración y más." />
+<meta property="og:type" content="website" />
+<meta property="og:image" content="/icon-catalogo-512.png" />
+<link rel="canonical" href="https://casaencasamx.com/catalogo.html" />
+<link rel="manifest" href="/manifest-catalogo.json">
+<meta name="theme-color" content="#4B6350">
+<link rel="icon" href="/icon-catalogo-192.png">
+<link rel="apple-touch-icon" href="/icon-catalogo-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+<!-- React -->
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin onerror="document.getElementById('root').innerHTML='<div style=\'padding:40px;font-family:sans-serif;color:#8B4444\'>No se pudo cargar React (unpkg.com). Prueba con otra red o desactiva bloqueadores de anuncios.</div>'"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin onerror="document.getElementById('root').innerHTML='<div style=\'padding:40px;font-family:sans-serif;color:#8B4444\'>No se pudo cargar React-DOM (unpkg.com). Prueba con otra red o desactiva bloqueadores de anuncios.</div>'"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin onerror="document.getElementById('root').innerHTML='<div style=\'padding:40px;font-family:sans-serif;color:#8B4444\'>No se pudo cargar Babel (unpkg.com). Prueba con otra red o desactiva bloqueadores de anuncios.</div>'"></script>
+
+<!-- Firebase (compat SDK: works with plain <script> tags, no build tools needed) -->
+<script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-app-compat.js" onerror="document.getElementById('root').innerHTML='<div style=\'padding:40px;font-family:sans-serif;color:#8B4444\'>No se pudo cargar Firebase (gstatic.com). Prueba con otra red o desactiva bloqueadores de anuncios.</div>'"></script>
+<script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore-compat.js" onerror="document.getElementById('root').innerHTML='<div style=\'padding:40px;font-family:sans-serif;color:#8B4444\'>No se pudo cargar Firestore (gstatic.com). Prueba con otra red o desactiva bloqueadores de anuncios.</div>'"></script>
+<script src="https://www.gstatic.com/firebasejs/12.16.0/firebase-auth-compat.js" onerror="document.getElementById('root').innerHTML='<div style=\'padding:40px;font-family:sans-serif;color:#8B4444\'>No se pudo cargar el inicio de sesión (gstatic.com). Prueba con otra red o desactiva bloqueadores de anuncios.</div>'"></script>
+<script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+
+<style>
+  html,body{margin:0;padding:0;}
+  :root{
+    --paper:#F5F0E1;
+    --paper-line:#E4D9BE;
+    --card:#FFFDF7;
+    --ink:#2A241D;
+    --ink-soft:#756B5C;
+    --moss:#4B6350;
+    --moss-soft:#DCE5DD;
+    --clay:#B8632F;
+    --clay-soft:#F3DFCC;
+    --slate:#5C7A8A;
+    --slate-soft:#DCE6EA;
+    --sold:#8B4444;
+    --sold-soft:#F1DADA;
+    --radius:14px;
+  }
+  .cec-app{
+    font-family:'Work Sans','Segoe UI',sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+  }
+  .cec-app *{box-sizing:border-box;}
+  .cec-screen{
+    width:100%;
+    max-width:480px;
+    min-height:100vh;
+    background:var(--paper);
+    position:relative;
+    padding-bottom:96px;
+  }
+  .cec-loading{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    height:100vh;width:100%;gap:12px;color:var(--ink-soft);
+  }
+  .cec-loading-badge{font-size:36px;}
+
+  .cec-header{
+    display:flex;align-items:center;gap:8px;
+    padding:18px 12px 10px;
+    position:sticky;top:0;background:var(--paper);z-index:5;
+    border-bottom:1px solid var(--paper-line);
+  }
+  .cec-header-title{
+    font-family:'Fraunces','Georgia',serif;
+    font-weight:600;font-size:19px;flex:1;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .cec-header-right{min-width:32px;text-align:right;}
+  .cec-iconbtn{
+    width:36px;height:36px;border-radius:50%;border:1px solid var(--paper-line);
+    background:var(--card);font-size:16px;cursor:pointer;color:var(--ink);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .cec-iconbtn--ghost{border:none;background:transparent;}
+
+  .cec-hero{padding:22px 20px 14px;}
+  .cec-hero-tab{
+    width:46px;height:46px;border-radius:12px;background:var(--moss);
+    color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;
+    margin-bottom:10px;
+  }
+  .cec-hero h1{
+    font-family:'Fraunces','Georgia',serif;font-size:30px;margin:0 0 6px;font-weight:600;
+  }
+  .cec-hero p{margin:0;color:var(--ink-soft);font-size:14.5px;line-height:1.45;max-width:34ch;}
+
+  .cec-segmented{
+    display:flex;margin:0 20px 16px;background:var(--paper-line);
+    border-radius:999px;padding:4px;gap:4px;
+  }
+  .cec-segmented button{
+    flex:1;border:none;background:transparent;padding:9px 4px;border-radius:999px;
+    font-size:13.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;
+    font-family:'Work Sans',sans-serif;
+  }
+  .cec-segmented button.active{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08);}
+
+  .cec-list{padding:0 20px;display:flex;flex-direction:column;gap:10px;}
+
+  .cec-folder-card{
+    position:relative;display:flex;align-items:center;gap:12px;
+    background:var(--card);border:1px solid var(--paper-line);border-left:5px solid var(--moss);
+    border-radius:var(--radius);padding:16px 14px 16px 18px;cursor:pointer;text-align:left;width:100%;
+    font-family:'Work Sans',sans-serif;
+  }
+  .cec-folder-card.accent-clay{border-left-color:var(--clay);}
+  .cec-folder-card.accent-slate{border-left-color:var(--slate);}
+  .cec-folder-tab{
+    position:absolute;top:-1px;left:18px;width:28px;height:8px;background:var(--paper-line);
+    border-radius:0 0 4px 4px;
+  }
+  .cec-folder-card-body{flex:1;min-width:0;}
+  .cec-folder-card-title{
+    font-family:'Fraunces','Georgia',serif;font-weight:600;font-size:17px;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .cec-folder-card-sub{color:var(--ink-soft);font-size:13px;margin-top:2px;}
+  .cec-chevron{color:var(--ink-soft);font-size:20px;}
+
+  .cec-casa-sub{padding:8px 20px 0;color:var(--ink-soft);font-size:13.5px;}
+  .cec-grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px 20px;
+  }
+  .cec-grid--folders{grid-template-columns:1fr 1fr;}
+  .cec-cat-card{
+    background:var(--card);border:1px solid var(--paper-line);border-top:4px solid var(--moss);
+    border-radius:var(--radius);padding:16px 12px;cursor:pointer;text-align:left;
+    display:flex;flex-direction:column;gap:6px;font-family:'Work Sans',sans-serif;
+    min-height:96px;
+  }
+  .cec-cat-card.accent-clay{border-top-color:var(--clay);}
+  .cec-cat-card.accent-slate{border-top-color:var(--slate);}
+  .cec-cat-icon{font-size:22px;}
+  .cec-cat-label{font-size:13.5px;font-weight:600;line-height:1.25;}
+  .cec-cat-count{
+    font-family:'IBM Plex Mono','Courier New',monospace;font-size:11.5px;color:var(--ink-soft);
+  }
+
+  .cec-obj-card{
+    background:var(--card);border:1px solid var(--paper-line);border-radius:var(--radius);
+    overflow:hidden;cursor:pointer;text-align:left;font-family:'Work Sans',sans-serif;
+    display:flex;flex-direction:column;
+  }
+  .cec-obj-photo{
+    position:relative;aspect-ratio:1;background:var(--paper-line);
+    display:flex;align-items:center;justify-content:center;font-size:30px;overflow:hidden;
+  }
+  .cec-obj-photo img{width:100%;height:100%;object-fit:cover;}
+  .cec-obj-info{padding:10px 10px 12px;}
+  .cec-obj-nombre{font-weight:600;font-size:13.5px;line-height:1.3;margin-bottom:3px;}
+  .cec-obj-precio{
+    font-family:'IBM Plex Mono','Courier New',monospace;font-size:12.5px;color:var(--clay);
+  }
+  .cec-badge{
+    position:absolute;top:8px;left:8px;font-size:10.5px;font-weight:700;padding:3px 8px;
+    border-radius:999px;text-transform:uppercase;letter-spacing:.03em;
+  }
+  .cec-badge--sold{background:var(--sold-soft);color:var(--sold);}
+  .cec-badge--live{background:var(--moss-soft);color:var(--moss);}
+  .cec-badge--float{top:14px;left:14px;font-size:12px;}
+
+  .cec-form{padding:16px 20px;display:flex;flex-direction:column;gap:14px;}
+  .cec-field{display:flex;flex-direction:column;gap:6px;}
+  .cec-field span{font-size:12.5px;font-weight:600;color:var(--ink-soft);}
+  .cec-field input,.cec-field textarea{
+    border:1px solid var(--paper-line);background:var(--card);border-radius:10px;
+    padding:11px 12px;font-size:15px;font-family:'Work Sans',sans-serif;color:var(--ink);resize:vertical;
+  }
+  .cec-field input:focus,.cec-field textarea:focus{outline:2px solid var(--moss);outline-offset:1px;}
+  .cec-note{font-size:12.5px;color:var(--ink-soft);line-height:1.4;}
+  .cec-error-text{color:var(--sold);font-size:12.5px;margin:-6px 0 0;}
+
+  .cec-photo-picker{
+    aspect-ratio:4/3;border-radius:var(--radius);border:2px dashed var(--paper-line);
+    background:var(--card);display:flex;align-items:center;justify-content:center;overflow:hidden;
+    cursor:pointer;
+  }
+  .cec-photo-picker img{width:100%;height:100%;object-fit:cover;}
+  .cec-photo-placeholder{color:var(--ink-soft);font-size:14px;text-align:center;padding:0 16px;}
+
+  .cec-btn{
+    border:none;border-radius:12px;padding:12px 16px;font-size:14.5px;font-weight:600;
+    cursor:pointer;font-family:'Work Sans',sans-serif;
+  }
+  .cec-btn--block{width:100%;}
+  .cec-btn--primary{background:var(--moss);color:#fff;}
+  .cec-btn--primary:disabled{opacity:.45;cursor:not-allowed;}
+  .cec-btn--ghost{background:transparent;border:1px solid var(--paper-line);color:var(--ink);}
+  .cec-btn--danger{background:var(--sold);color:#fff;}
+  .cec-link-danger{
+    background:none;border:none;color:var(--sold);font-size:13px;text-decoration:underline;
+    cursor:pointer;padding:6px 0;font-family:'Work Sans',sans-serif;
+  }
+  .cec-danger-zone{padding:6px 20px 20px;}
+  .cec-confirm{
+    background:var(--sold-soft);border-radius:10px;padding:12px;display:flex;
+    flex-direction:column;gap:10px;font-size:13.5px;
+  }
+  .cec-confirm div{display:flex;gap:8px;}
+  .cec-confirm .cec-btn{padding:8px 12px;font-size:13px;flex:1;}
+
+  .cec-fab{
+    position:fixed;bottom:28px;right:calc(50% - 240px + 20px);
+    width:56px;height:56px;border-radius:50%;background:var(--moss);color:#fff;
+    border:none;font-size:26px;box-shadow:0 6px 16px rgba(75,99,80,.4);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+  }
+  @media (max-width:520px){ .cec-fab{right:20px;} }
+
+  .cec-ficha-photo{
+    position:relative;aspect-ratio:4/3;background:var(--paper-line);
+    display:flex;align-items:center;justify-content:center;font-size:48px;overflow:hidden;
+  }
+  .cec-ficha-photo img{width:100%;height:100%;object-fit:cover;}
+  .cec-ficha-body{padding:18px 20px 30px;}
+  .cec-eyebrow{
+    font-family:'IBM Plex Mono','Courier New',monospace;font-size:11.5px;color:var(--ink-soft);
+    text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;
+  }
+  .cec-ficha-nombre{
+    font-family:'Fraunces','Georgia',serif;font-size:23px;font-weight:600;margin:0 0 6px;
+  }
+  .cec-ficha-precio{
+    font-family:'IBM Plex Mono','Courier New',monospace;font-size:18px;color:var(--clay);
+    margin-bottom:16px;
+  }
+  .cec-ficha-row{
+    display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid var(--paper-line);
+    font-size:13.5px;
+  }
+  .cec-ficha-row span:first-child{color:var(--ink-soft);}
+  .cec-ficha-block{padding-top:14px;border-top:1px solid var(--paper-line);margin-top:4px;}
+  .cec-ficha-block-label{
+    font-size:11.5px;font-weight:700;text-transform:uppercase;color:var(--ink-soft);
+    letter-spacing:.03em;
+  }
+  .cec-ficha-block p{margin:6px 0 0;font-size:14px;line-height:1.5;}
+  .cec-ficha-actions{display:flex;flex-direction:column;gap:10px;margin-top:20px;}
+
+  .cec-empty{
+    grid-column:1/-1;display:flex;flex-direction:column;align-items:center;text-align:center;
+    padding:40px 24px;gap:8px;
+  }
+  .cec-empty-icon{font-size:34px;}
+  .cec-empty-title{font-weight:600;font-size:15px;}
+  .cec-empty-hint{color:var(--ink-soft);font-size:13px;max-width:28ch;margin:0 0 8px;}
+
+  .cec-toast{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:999px;
+    font-size:13px;z-index:20;box-shadow:0 6px 16px rgba(0,0,0,.25);
+  }
+</style>
+<style>
+  .cat-app{
+    font-family:'Work Sans','Segoe UI',sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+  }
+  .cat-app *{box-sizing:border-box;}
+  .cat-screen{width:100%;max-width:520px;min-height:100vh;background:var(--paper);}
+  .cat-loading{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    height:100vh;width:100%;gap:12px;color:var(--ink-soft);
+  }
+  .cat-loading-badge{font-size:36px;}
+
+  .cat-header{
+    display:flex;align-items:center;gap:10px;padding:18px 16px 10px;
+    position:sticky;top:0;background:var(--paper);z-index:5;border-bottom:1px solid var(--paper-line);
+  }
+  .cat-header-title{font-family:'Fraunces','Georgia',serif;font-weight:600;font-size:18px;}
+  .cat-iconbtn{
+    width:36px;height:36px;border-radius:50%;border:1px solid var(--paper-line);
+    background:var(--card);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  }
+
+  .cat-hero{padding:26px 20px 16px;}
+  .cat-hero-tab{
+    width:46px;height:46px;border-radius:12px;background:var(--clay);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:10px;
+  }
+  .cat-hero h1{font-family:'Fraunces','Georgia',serif;font-size:30px;margin:0 0 6px;font-weight:600;}
+  .cat-hero-logo{display:block;height:48px;width:auto;margin:2px 0 10px;}
+  .cat-hero p{margin:0;color:var(--ink-soft);font-size:14.5px;line-height:1.45;max-width:36ch;}
+  .cat-hero-contact{margin-top:8px !important;font-size:12.5px !important;}
+  .cat-hero-contact a{color:var(--moss);font-weight:600;text-decoration:none;}
+
+  .cat-interes-form{margin-top:22px;display:flex;flex-direction:column;gap:14px;}
+  .cat-interes-alt{
+    display:block;text-align:center;font-size:12.5px;color:var(--ink-soft);
+    text-decoration:underline;margin-top:2px;
+  }
+  .cat-interes-ok{
+    margin-top:22px;background:var(--moss-soft);color:var(--moss);border-radius:12px;
+    padding:14px 16px;font-size:14px;font-weight:600;text-align:center;
+  }
+
+  .cat-filters{
+    display:flex;gap:8px;overflow-x:auto;padding:0 20px 16px;scrollbar-width:none;
+  }
+  .cat-filters::-webkit-scrollbar{display:none;}
+  .cat-filters button{
+    flex-shrink:0;border:1px solid var(--paper-line);background:var(--card);border-radius:999px;
+    padding:8px 14px;font-size:13px;font-weight:600;color:var(--ink-soft);cursor:pointer;
+    font-family:'Work Sans',sans-serif;white-space:nowrap;
+  }
+  .cat-filters button.active{background:var(--moss);border-color:var(--moss);color:#fff;}
+  .cat-filters--sub{padding-top:0;margin-top:-8px;}
+  .cat-filters--sub button{font-size:12px;padding:6px 12px;}
+  .cat-filters--sub button.active{background:var(--clay);border-color:var(--clay);}
+
+  .cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:4px 20px 30px;}
+  .cat-card{
+    background:var(--card);border:1px solid var(--paper-line);border-radius:var(--radius);
+    overflow:hidden;cursor:pointer;text-align:left;display:flex;flex-direction:column;padding:0;
+    font-family:'Work Sans',sans-serif;
+  }
+  .cat-card-photo{
+    aspect-ratio:1;background:var(--paper-line);display:flex;align-items:center;justify-content:center;
+    font-size:32px;overflow:hidden;
+  }
+  .cat-card-photo img{width:100%;height:100%;object-fit:cover;}
+  .cat-card-info{padding:10px 12px 14px;}
+  .cat-card-nombre{font-weight:600;font-size:14px;line-height:1.3;margin-bottom:4px;}
+  .cat-card-precio{font-family:'IBM Plex Mono','Courier New',monospace;font-size:13px;color:var(--clay);}
+
+  .cat-empty{
+    grid-column:1/-1;display:flex;flex-direction:column;align-items:center;text-align:center;
+    padding:50px 24px;gap:8px;
+  }
+  .cat-empty-icon{font-size:34px;}
+  .cat-empty-title{font-weight:600;font-size:15px;}
+  .cat-empty-hint{color:var(--ink-soft);font-size:13px;max-width:28ch;margin:0;}
+
+  .cat-footer{
+    text-align:center;padding:10px 20px 40px;font-size:13px;color:var(--ink-soft);
+  }
+  .cat-footer a{color:var(--moss);font-weight:600;text-decoration:none;}
+
+  .cat-detail-photo{
+    aspect-ratio:4/3;background:var(--paper-line);display:flex;align-items:center;justify-content:center;
+    font-size:48px;overflow:hidden;
+  }
+  .cat-detail-photo img{width:100%;height:100%;object-fit:cover;}
+  .cec-ficha-thumbs{display:flex;gap:8px;}
+  .cec-ficha-thumb{
+    width:52px;height:52px;border-radius:8px;overflow:hidden;border:2px solid transparent;
+    padding:0;cursor:pointer;background:var(--paper-line);
+  }
+  .cec-ficha-thumb.active{border-color:var(--moss);}
+  .cec-ficha-thumb img{width:100%;height:100%;object-fit:cover;}
+  .cat-detail-body{padding:18px 20px 40px;}
+  .cat-eyebrow{
+    font-family:'IBM Plex Mono','Courier New',monospace;font-size:11.5px;color:var(--ink-soft);
+    text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;
+  }
+  .cat-detail-nombre{font-family:'Fraunces','Georgia',serif;font-size:23px;font-weight:600;margin:0 0 6px;}
+  .cat-detail-precio{
+    font-family:'IBM Plex Mono','Courier New',monospace;font-size:19px;color:var(--clay);margin-bottom:16px;
+  }
+  .cat-detail-row{
+    display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid var(--paper-line);font-size:13.5px;
+  }
+  .cat-detail-row span:first-child{color:var(--ink-soft);}
+  .cat-detail-block{padding-top:14px;border-top:1px solid var(--paper-line);margin-top:4px;}
+  .cat-detail-label{font-size:11.5px;font-weight:700;text-transform:uppercase;color:var(--ink-soft);letter-spacing:.03em;}
+  .cat-detail-block p{margin:6px 0 0;font-size:14px;line-height:1.5;}
+
+  .cat-btn{
+    display:block;text-align:center;border:none;border-radius:12px;padding:14px 16px;font-size:15px;
+    font-weight:700;cursor:pointer;font-family:'Work Sans',sans-serif;text-decoration:none;margin-top:22px;
+  }
+  .cat-btn--block{width:100%;}
+  .cat-btn--primary{background:var(--moss);color:#fff;}
+  .cat-btn--ghost{background:var(--card);border:1px solid var(--paper-line);color:var(--ink);}
+  .cat-btn--google{background:#fff;border:1px solid var(--paper-line);color:var(--ink);}
+  .cat-divider{
+    text-align:center;font-size:12px;color:var(--ink-soft);position:relative;margin:4px 0;
+  }
+  .cat-fav-btn{
+    position:absolute;top:8px;right:8px;background:rgba(255,255,255,.85);border:none;
+    border-radius:50%;width:30px;height:30px;font-size:15px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+  }
+</style>
+</head>
+<body>
+<div id="root"><div style="padding:40px;font-family:sans-serif;color:#756B5C;">Cargando catálogo…</div></div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCMuMSP22pzKO4EAiBX1vQjKF2wXS-N55o",
+    authDomain: "casa-en-casa.firebaseapp.com",
+    projectId: "casa-en-casa",
+    storageBucket: "casa-en-casa.firebasestorage.app",
+    messagingSenderId: "272769105999",
+    appId: "1:272769105999:web:465e79fc91d8297a3baa3a"
+  };
+  try {
+    firebase.initializeApp(firebaseConfig);
+    window.__cecDb = firebase.firestore();
+    window.__cecAuth = firebase.auth();
+    emailjs.init({ publicKey: "bXgJgxWPTQESsPSCj" });
+  } catch (e) {
+    document.getElementById('root').innerHTML =
+      '<div style="padding:40px;font-family:sans-serif;color:#8B4444;">No se pudo iniciar Firebase: ' + e.message + '</div>';
+  }
+</script>
+
+<script type="text/plain" id="cec-source">
+const { useState, useEffect } = React;
+const CONTACT_EMAIL = "infocasaencasa@gmail.com";
+
+const REGLAS_VENDEDOR = [
+  {
+    titulo: "1. Bienvenido",
+    texto: "En Casa en Casa estamos muy contentos de que quieras formar parte de nuestra comunidad. Creemos que los objetos merecen una segunda vida y que siempre habrá alguien que los valore tanto como tú lo hiciste.",
+  },
+  {
+    titulo: "2. Alta de vendedor",
+    texto: "El proceso para convertirte en vendedor es sencillo: solicitas el alta llenando este formulario y pagando 200 pesos, aceptas las presentes condiciones, Casa en Casa valida tu registro, se crea tu cuenta de acceso, y puedes crear tu \"Casa\" y empezar a publicar tus artículos.",
+  },
+  {
+    titulo: "3. Publicación de artículos",
+    texto: "Por ahora, Casa en Casa solo opera para compraventa dentro de la Ciudad de México. En Casa en Casa solo pueden anunciarse objetos habituales de una vivienda. Al publicar un artículo, es tu responsabilidad asegurarte de que las fotografías sean reales y del objeto que estás vendiendo, la descripción sea veraz, se indiquen los desperfectos si los hay, el artículo te pertenezca legítimamente, y que no se publiquen productos falsificados, robados o ilegales.",
+  },
+  {
+    titulo: "4. Objetos prohibidos",
+    texto: "No podrán anunciarse en Casa en Casa: ropa, joyas, metales preciosos, obras de arte de alto valor, productos ilegales, armas, medicamentos, animales, alimentos, productos falsificados, material con derechos de autor no autorizados, ni objetos robados.",
+  },
+  {
+    titulo: "5. Precios",
+    texto: "Tú, como vendedor, fijas libremente el precio de tus artículos. Casa en Casa no interviene en su valoración ni se queda con nada de tu venta.",
+  },
+  {
+    titulo: "6. Proceso de compra",
+    texto: "El comprador ve tu artículo en el catálogo y manda una solicitud de interés. Te llegan sus datos de contacto. A partir de ahí, tú y el comprador se ponen de acuerdo directamente sobre el precio final, la forma de pago, y el lugar donde el comprador recogerá el artículo.",
+  },
+  {
+    titulo: "7. Responsabilidad",
+    texto: "Casa en Casa actúa únicamente como plataforma intermediaria entre compradores y vendedores. No es propietaria de los objetos publicados ni garantiza su estado, autenticidad o legalidad.",
+  },
+  {
+    titulo: "8. Datos personales",
+    texto: "Tus datos están protegidos conforme a la ley de protección de datos.",
+  },
+  {
+    titulo: "9. Normas de comportamiento",
+    texto: "Dentro de Casa en Casa no se permite el lenguaje ofensivo, el fraude, la suplantación de identidad, la manipulación de precios.",
+  },
+  {
+    titulo: "10. Baja de usuarios",
+    texto: "Casa en Casa se reserva el derecho de eliminar cuentas que incumplan estas normas, publiquen información falsa, intenten estafar a otros usuarios, o incumplan repetidamente estas condiciones.",
+  },
+  {
+    titulo: "11. Modificación de las condiciones",
+    texto: "Casa en Casa podrá modificar estas condiciones en cualquier momento, avisando oportunamente a los usuarios registrados.",
+  },
+  {
+    titulo: "12. Aceptación",
+    texto: "Al registrarte como vendedor en Casa en Casa, declaras haber leído, comprendido y aceptado íntegramente estas condiciones de uso.",
+  },
+  {
+    titulo: "13. Legislación aplicable",
+    texto: "Este documento se rige por la legislación mexicana vigente.",
+  },
+];
+
+async function guardarSolicitudVendedor(data) {
+  await window.__cecDb.collection("solicitudesVendedor").add({ ...data, estado: "pendiente", createdAt: Date.now() });
+  try {
+    await emailjs.send("service_rutmx4r", "aq96ds7", {
+      objeto_nombre: "Nueva solicitud de vendedor",
+      casa_nombre: "",
+      comprador_nombre: data.nombre || "",
+      comprador_correo: data.correo || "",
+      comprador_telefono: data.telefono || "",
+      mensaje: data.motivo || "(sin mensaje adicional)",
+    });
+  } catch (e) {
+    // La solicitud ya quedó guardada aunque el correo falle.
+  }
+}
+
+const CATEGORIES = [
+  { key: "muebles", label: "Muebles", icon: "🪑" },
+  { key: "cocina", label: "Cocina y comedor", icon: "🍽️" },
+  { key: "electro", label: "Electrodomésticos", icon: "🔌" },
+  { key: "textiles", label: "Textiles del hogar", icon: "🧺" },
+  { key: "decoracion", label: "Decoración e iluminación", icon: "💡" },
+  { key: "jardin", label: "Jardín y exterior", icon: "🌳" },
+  { key: "herramientas", label: "Herramientas y herrajes", icon: "🔧" },
+  { key: "electronica", label: "Electrónica y entretenimiento", icon: "📺" },
+  { key: "otros", label: "Otros objetos del hogar", icon: "🏡" },
+];
+
+const SUBCATEGORIES = {
+  muebles: ["Sofás", "Sillones", "Mesas auxiliares", "Mesas de comedor", "Sillas", "Escritorios", "Burós", "Camas", "Cómodas", "Aparadores", "Mecedoras"],
+  cocina: ["Vajillas", "Cubiertos", "Cuchillos", "Cucharas de servir", "Copas", "Vasos", "Ollas", "Sartenes", "Pequeños electrodomésticos", "Utensilios de cocina", "Manteles", "Recipientes para almacenar"],
+  electro: ["Pequeños electrodomésticos", "Cafeteras", "Licuadoras", "Tostadores", "Hornos eléctricos", "Microondas", "Aspiradoras", "Otros aparatos del hogar"],
+  textiles: ["Sábanas", "Toallas", "Edredones", "Almohadas", "Cobijas", "Manteles", "Otros textiles"],
+  decoracion: ["Lámparas", "Espejos", "Cristal cortado", "Cuadros", "Adornos", "Floreros", "Objetos decorativos"],
+  herramientas: ["Cajas de herramientas", "Martillos", "Desarmadores", "Palas", "Herramientas de jardín", "Herrajes", "Otros accesorios"],
+  jardin: ["Mesas plegables", "Sillas plegables", "Muebles de exterior", "Accesorios de jardín"],
+  electronica: ["Televisiones", "Equipos de sonido", "Aparatos electrónicos"],
+};
+
+function categoriaInfo(key) {
+  return CATEGORIES.find((c) => c.key === key) || { label: key, icon: "📦" };
+}
+
+function formatPrecio(n) {
+  const num = Number(n);
+  if (!n || isNaN(num)) return "Consultar precio";
+  return num.toLocaleString("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 });
+}
+
+function contactUrl(objeto, casa) {
+  const subject = encodeURIComponent("Me interesa: " + (objeto.nombre || "un objeto") + " (Casa en Casa)");
+  const body = encodeURIComponent(
+    "Hola, vi este objeto en el catálogo de Casa en Casa y me interesa:\n\n" +
+    "Objeto: " + (objeto.nombre || "-") + "\n" +
+    "Precio: " + formatPrecio(objeto.precio) + "\n" +
+    (casa && casa.nombre ? "Casa: " + casa.nombre + "\n" : "") +
+    "\n¿Sigue disponible?"
+  );
+  return "mailto:" + CONTACT_EMAIL + "?subject=" + subject + "&body=" + body;
+}
+
+async function fetchCasas() {
+  const snap = await window.__cecDb.collection("casas").get();
+  const map = {};
+  snap.docs.forEach((d) => { map[d.id] = { nombre: d.data().nombre, ownerId: d.data().ownerId || null }; });
+  return map;
+}
+async function fetchPublicadosDeCategoria(categoria) {
+  const snap = await window.__cecDb.collection("objetos")
+    .where("categoria", "==", categoria)
+    .where("publicado", "==", true)
+    .get();
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+    .filter((o) => !o.vendido)
+    .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+}
+async function fetchFotosCompletas(objetoId) {
+  const doc = await window.__cecDb.collection("fotos").doc(objetoId).get();
+  if (!doc.exists) return [];
+  const d = doc.data();
+  if (Array.isArray(d.datas)) return d.datas;
+  if (d.data) return [d.data];
+  return [];
+}
+async function fetchObjetosPorIds(ids) {
+  if (!ids || ids.length === 0) return [];
+  const grupos = [];
+  for (let i = 0; i < ids.length; i += 30) grupos.push(ids.slice(i, i + 30));
+  const resultados = await Promise.all(
+    grupos.map((grupo) =>
+      window.__cecDb.collection("objetos")
+        .where(firebase.firestore.FieldPath.documentId(), "in", grupo)
+        .get()
+    )
+  );
+  return resultados.flatMap((snap) => snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+}
+
+async function guardarInteres(data) {
+  await window.__cecDb.collection("intereses").add({ ...data, createdAt: Date.now() });
+  try {
+    await emailjs.send("service_rutmx4r", "aq96ds7", {
+      objeto_nombre: data.objetoNombre || "",
+      casa_nombre: data.casaNombre || "",
+      comprador_nombre: data.nombre || "",
+      comprador_correo: data.correo || "",
+      comprador_telefono: data.telefono || "",
+      mensaje: data.mensaje || "(sin mensaje)",
+    });
+  } catch (e) {
+    // El interés ya quedó guardado en la base de datos aunque el correo falle.
+  }
+}
+
+async function fetchComprador(uid) {
+  const doc = await window.__cecDb.collection("compradores").doc(uid).get();
+  return doc.exists ? doc.data() : null;
+}
+async function guardarComprador(uid, data) {
+  await window.__cecDb.collection("compradores").doc(uid).set(data, { merge: true });
+}
+async function toggleFavorito(uid, objetoId, marcar) {
+  const ref = window.__cecDb.collection("compradores").doc(uid);
+  const fieldValue = marcar
+    ? firebase.firestore.FieldValue.arrayUnion(objetoId)
+    : firebase.firestore.FieldValue.arrayRemove(objetoId);
+  await ref.set({ favoritos: fieldValue }, { merge: true });
+}
+async function fetchMiHistorial(uid) {
+  const snap = await window.__cecDb.collection("intereses").where("compradorUid", "==", uid).get();
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+}
+
+function InteresForm({ objeto, casa, comprador }) {
+  const [abierto, setAbierto] = useState(false);
+  const [nombre, setNombre] = useState(comprador ? comprador.nombre || "" : "");
+  const [correo, setCorreo] = useState(comprador ? comprador.correo || "" : "");
+  const [telefono, setTelefono] = useState(comprador ? comprador.telefono || "" : "");
+  const [mensaje, setMensaje] = useState("");
+  const [enviando, setEnviando] = useState(false);
+  const [enviado, setEnviado] = useState(false);
+  const [err, setErr] = useState("");
+
+  async function enviar() {
+    setErr("");
+    setEnviando(true);
+    try {
+      await guardarInteres({
+        objetoId: objeto.id,
+        objetoNombre: objeto.nombre || "",
+        casaNombre: casa ? casa.nombre : "",
+        ownerId: casa ? casa.ownerId : null,
+        compradorUid: comprador ? comprador.uid : null,
+        nombre: nombre.trim(),
+        correo: correo.trim(),
+        telefono: telefono.trim(),
+        mensaje: mensaje.trim(),
+      });
+      setEnviado(true);
+    } catch (e) {
+      setErr("No se pudo enviar. Intenta de nuevo o escríbenos directo por correo.");
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  if (enviado) {
+    return (
+      <div className="cat-interes-ok">
+        ✅ ¡Listo! Recibimos tus datos, te vamos a contactar pronto sobre este objeto.
+      </div>
+    );
+  }
+
+  if (!abierto) {
+    return (
+      <button className="cat-btn cat-btn--primary cat-btn--block" onClick={() => setAbierto(true)}>
+        💌 Me interesa este objeto
+      </button>
+    );
+  }
+
+  return (
+    <div className="cat-interes-form">
+      <label className="cec-field"><span>Tu nombre</span>
+        <input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Nombre completo" />
+      </label>
+      <label className="cec-field"><span>Tu correo</span>
+        <input type="email" value={correo} onChange={(e) => setCorreo(e.target.value)} placeholder="tucorreo@ejemplo.com" />
+      </label>
+      <label className="cec-field"><span>Tu teléfono</span>
+        <input type="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)} placeholder="55 1234 5678" />
+      </label>
+      <label className="cec-field"><span>Mensaje (opcional)</span>
+        <textarea rows={2} value={mensaje} onChange={(e) => setMensaje(e.target.value)} placeholder="¿Alguna pregunta sobre el objeto?" />
+      </label>
+      {err && <p className="cec-error-text">{err}</p>}
+      <button className="cat-btn cat-btn--primary cat-btn--block" disabled={!nombre.trim() || !correo.trim() || enviando} onClick={enviar}>
+        {enviando ? "Enviando…" : "Enviar mis datos"}
+      </button>
+      <a className="cat-interes-alt" href={contactUrl(objeto, casa)}>O escríbenos directo por correo</a>
+    </div>
+  );
+}
+
+function SolicitudVendedor({ onClose }) {
+  const [modo, setModo] = useState("crear"); // crear | entrar
+  const [nombre, setNombre] = useState("");
+  const [correo, setCorreo] = useState("");
+  const [telefono, setTelefono] = useState("");
+  const [password, setPassword] = useState("");
+  const [acepto, setAcepto] = useState(false);
+  const [enviando, setEnviando] = useState(false);
+  const [err, setErr] = useState("");
+  const [correoExistente, setCorreoExistente] = useState(false);
+  const [recuperado, setRecuperado] = useState(false);
+  const [esperandoVerificacion, setEsperandoVerificacion] = useState(false);
+  const [reenviado, setReenviado] = useState(false);
+  const [revisandoSesion, setRevisandoSesion] = useState(true);
+  const [yaListo, setYaListo] = useState(false);
+  const [cupoPromo, setCupoPromo] = useState(null); // null = aún no sabemos, número = restantes
+  const [ganadoPromo, setGanadoPromo] = useState(false);
+
+  useEffect(() => {
+    window.__cecDb.collection("config").doc("promoVendedores").get()
+      .then((doc) => {
+        const usados = doc.exists ? (doc.data().usados || 0) : 0;
+        setCupoPromo(Math.max(0, 20 - usados));
+      })
+      .catch(() => setCupoPromo(null));
+  }, []);
+
+  useEffect(() => {
+    const u = window.__cecAuth.currentUser;
+    if (!u) {
+      setRevisandoSesion(false);
+      return;
+    }
+    (async () => {
+      if (!u.emailVerified) {
+        setCorreo(u.email || "");
+        setEsperandoVerificacion(true);
+        setRevisandoSesion(false);
+        return;
+      }
+      try {
+        const doc = await window.__cecDb.collection("vendedores").doc(u.uid).get();
+        if (doc.exists && doc.data().haPagado) {
+          setYaListo(true);
+        } else {
+          setCorreo(u.email || "");
+          setModo("entrar");
+        }
+      } catch (e) {
+        // si algo falla revisando, mostramos el formulario normal como respaldo
+      }
+      setRevisandoSesion(false);
+    })();
+  }, []);
+
+  async function recuperarContrasena() {
+    setEnviando(true);
+    try {
+      const metodos = await window.__cecAuth.fetchSignInMethodsForEmail(correo.trim());
+      if (metodos.length === 0) {
+        setErr("No encontramos ninguna cuenta con ese correo. Revisa que esté bien escrito.");
+        setEnviando(false);
+        return;
+      }
+      await window.__cecAuth.sendPasswordResetEmail(correo.trim());
+      setRecuperado(true);
+    } catch (e) {
+      setErr("No se pudo enviar el correo de recuperación. Revisa que el correo esté bien escrito.");
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  async function crearCuenta() {
+    setErr("");
+    setCorreoExistente(false);
+    setEnviando(true);
+    try {
+      // 1) Guardamos la solicitud (para tu registro interno, igual que antes)
+      try {
+        await guardarSolicitudVendedor({ nombre: nombre.trim(), correo: correo.trim(), telefono: telefono.trim(), motivo: "" });
+      } catch (e) { /* no bloquea el flujo si falla */ }
+
+      // 2) Creamos la cuenta del vendedor
+      const cred = await window.__cecAuth.createUserWithEmailAndPassword(correo.trim(), password);
+      const uid = cred.user.uid;
+
+      // 3) Guardamos su ficha de vendedor, todavía sin pagar
+      await window.__cecDb.collection("vendedores").doc(uid).set({
+        nombre: nombre.trim(),
+        correo: correo.trim(),
+        telefono: telefono.trim(),
+        haPagado: false,
+        createdAt: Date.now(),
+      });
+
+      // 4) Mandamos el correo de verificación y esperamos a que lo confirme
+      await cred.user.sendEmailVerification();
+      setEsperandoVerificacion(true);
+    } catch (e) {
+      const esCorreoExistente = e && e.code === "auth/email-already-in-use";
+      setCorreoExistente(esCorreoExistente);
+      setErr(esCorreoExistente
+        ? "Ya existe una cuenta con ese correo."
+        : "No se pudo crear tu cuenta. Intenta de nuevo.");
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  async function reenviarVerificacion() {
+    setEnviando(true);
+    try {
+      await window.__cecAuth.currentUser.sendEmailVerification();
+      setReenviado(true);
+    } catch (e) {
+      setErr("No se pudo reenviar el correo. Intenta de nuevo en un momento.");
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  async function yaConfirme() {
+    setErr("");
+    setEnviando(true);
+    try {
+      await window.__cecAuth.currentUser.reload();
+      if (!window.__cecAuth.currentUser.emailVerified) {
+        setErr("Todavía no detectamos la confirmación. Revisa tu bandeja (o spam) y da clic al link antes de continuar.");
+        setEnviando(false);
+        return;
+      }
+      const uid = window.__cecAuth.currentUser.uid;
+
+      // Intentamos primero la promoción de inauguración (primeras 20 cuentas gratis)
+      const resPromo = await fetch("/api/registrar-promo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uid }),
+      });
+      const dataPromo = await resPromo.json();
+      if (dataPromo.ok) {
+        setCupoPromo(dataPromo.restantes);
+        setGanadoPromo(true);
+        setEnviando(false);
+        return;
+      }
+
+      // Si ya no hay lugares en la promoción, seguimos con el pago normal
+      const res = await fetch("/api/crear-sesion-pago", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uid, correo: correo.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.url) {
+        throw new Error(data.error || "No se pudo iniciar el pago.");
+      }
+      window.location.href = data.url;
+    } catch (e) {
+      setErr("No se pudo iniciar el pago. Intenta de nuevo.");
+      setEnviando(false);
+    }
+  }
+
+  async function entrarConCuentaExistente() {
+    setErr("");
+    setEnviando(true);
+    try {
+      const cred = await window.__cecAuth.signInWithEmailAndPassword(correo.trim(), password);
+      if (!cred.user.emailVerified) {
+        setEsperandoVerificacion(true);
+        setEnviando(false);
+        return;
+      }
+      const doc = await window.__cecDb.collection("vendedores").doc(cred.user.uid).get();
+      if (doc.exists && doc.data().haPagado) {
+        setErr("¡Tu cuenta ya está activa! Inicia sesión en tu panel de administración con este mismo correo y contraseña.");
+        setEnviando(false);
+        return;
+      }
+      await yaConfirme();
+    } catch (e) {
+      setErr("Correo o contraseña incorrectos.");
+      setEnviando(false);
+    }
+  }
+
+  return (
+    <div className="cat-screen">
+      <div className="cat-header">
+        <button className="cat-iconbtn" onClick={onClose} aria-label="Cerrar">←</button>
+        <div className="cat-header-title">Quiero vender</div>
+      </div>
+
+      {revisandoSesion ? (
+        <p className="cec-note" style={{padding:"20px"}}>Revisando tu sesión…</p>
+      ) : ganadoPromo ? (
+        <div className="cec-form">
+          <div className="cat-interes-ok">
+            🎉 ¡Felicidades! Entraste en la promoción de inauguración — tu cuenta quedó activada gratis, sin pagar nada. Ya puedes iniciar sesión en tu panel y crear tu Casa.
+          </div>
+          <a className="cat-btn cat-btn--primary cat-btn--block" href="/" style={{display:"block", textAlign:"center", textDecoration:"none"}}>
+            Ir a mi panel
+          </a>
+        </div>
+      ) : yaListo ? (
+        <div className="cec-form">
+          <div className="cat-interes-ok">
+            ✅ Ya tienes una cuenta de vendedor activa. Ve a tu panel de administración para crear tu Casa y publicar objetos.
+          </div>
+          <a className="cat-btn cat-btn--primary cat-btn--block" href="/" style={{display:"block", textAlign:"center", textDecoration:"none"}}>
+            Ir a mi panel
+          </a>
+        </div>
+      ) : esperandoVerificacion ? (
+        <div className="cec-form">
+          <div className="cat-interes-ok">
+            📩 Te mandamos un correo a <strong>{correo.trim()}</strong> con un link para confirmar tu cuenta.
+          </div>
+          <p className="cec-note">Ábrelo, dale clic al link, y luego regresa aquí y dale a "Ya lo confirmé" para continuar con el pago.</p>
+          {err && <p className="cec-error-text">{err}</p>}
+          {reenviado && <p className="cec-note" style={{color:"var(--moss)"}}>✅ Te lo volvimos a mandar.</p>}
+          <button className="cat-btn cat-btn--primary cat-btn--block" disabled={enviando} onClick={yaConfirme}>
+            {enviando ? "Comprobando…" : "Ya lo confirmé, continuar"}
+          </button>
+          <button className="cat-interes-alt" style={{background:"none", border:"none", cursor:"pointer"}} onClick={reenviarVerificacion} disabled={enviando}>
+            No me llegó, reenviar correo
+          </button>
+        </div>
+      ) : modo === "entrar" ? (
+        <div className="cec-form">
+          <h2 style={{fontFamily:"'Fraunces',serif", fontSize:"19px", margin:"0 0 4px"}}>Ya tengo cuenta</h2>
+          <p className="cec-note">Inicia sesión para continuar con tu pago o revisar el estado de tu cuenta.</p>
+
+          <label className="cec-field"><span>Tu correo</span>
+            <input type="email" value={correo} onChange={(e) => setCorreo(e.target.value)} placeholder="tucorreo@ejemplo.com" />
+          </label>
+          <label className="cec-field"><span>Tu contraseña</span>
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          </label>
+
+          {err && <p className="cec-error-text">{err}</p>}
+          {recuperado && <p className="cec-note" style={{color:"var(--moss)"}}>✅ Te mandamos un correo con instrucciones para poner una nueva contraseña.</p>}
+          <button className="cat-btn cat-btn--primary cat-btn--block" disabled={!correo.trim() || !password || enviando} onClick={entrarConCuentaExistente}>
+            {enviando ? "Un momento…" : "Entrar y continuar"}
+          </button>
+          <button className="cat-interes-alt" style={{background:"none", border:"none", cursor:"pointer"}} onClick={recuperarContrasena} disabled={enviando || !correo.trim()}>
+            ¿Olvidaste tu contraseña?
+          </button>
+          <button className="cat-interes-alt" style={{background:"none", border:"none", cursor:"pointer"}} onClick={() => { setModo("crear"); setErr(""); }}>
+            No tengo cuenta, crear una
+          </button>
+        </div>
+      ) : (
+      <div className="cec-form">
+        {cupoPromo != null && cupoPromo > 0 && (
+          <div className="cat-interes-ok" style={{marginBottom:"4px"}}>
+            🎉 Promoción de inauguración: las primeras 20 cuentas se registran gratis. ¡Quedan {cupoPromo} lugares!
+          </div>
+        )}
+        <h2 style={{fontFamily:"'Fraunces',serif", fontSize:"19px", margin:"0 0 4px"}}>Pack de lanzamiento</h2>
+        <p className="cec-note">Crea tu cuenta y publica hasta 500 artículos por $200 MXN, pago único.</p>
+
+        <h2 style={{fontFamily:"'Fraunces',serif", fontSize:"17px", margin:"14px 0 4px"}}>Condiciones para vendedores</h2>
+        <p className="cec-note">Léelas con calma antes de registrarte.</p>
+
+        <div style={{maxHeight:"260px", overflowY:"auto", border:"1px solid var(--paper-line)", borderRadius:"10px", padding:"14px", background:"var(--card)"}}>
+          {REGLAS_VENDEDOR.map((r) => (
+            <div key={r.titulo} style={{marginBottom:"14px"}}>
+              <div style={{fontWeight:700, fontSize:"13px", marginBottom:"3px"}}>{r.titulo}</div>
+              <p style={{margin:0, fontSize:"13px", lineHeight:1.55, color:"var(--ink-soft)"}}>{r.texto}</p>
+            </div>
+          ))}
+        </div>
+
+        <label style={{display:"flex", gap:"10px", alignItems:"flex-start", fontSize:"13px", cursor:"pointer"}}>
+          <input type="checkbox" checked={acepto} onChange={(e) => setAcepto(e.target.checked)} style={{marginTop:"3px"}} />
+          <span>He leído y acepto las condiciones para vendedores de Casa en Casa.</span>
+        </label>
+
+        <label className="cec-field"><span>Tu nombre</span>
+          <input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Nombre completo" />
+        </label>
+        <label className="cec-field"><span>Tu correo</span>
+          <input type="email" value={correo} onChange={(e) => setCorreo(e.target.value)} placeholder="tucorreo@ejemplo.com" />
+        </label>
+        <label className="cec-field"><span>Tu teléfono</span>
+          <input type="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)} placeholder="55 1234 5678" />
+        </label>
+        <label className="cec-field"><span>Crea una contraseña</span>
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mínimo 6 caracteres" />
+        </label>
+
+        {err && <p className="cec-error-text">{err}</p>}
+        {recuperado && <p className="cec-note" style={{color:"var(--moss)"}}>✅ Te mandamos un correo con instrucciones para poner una nueva contraseña.</p>}
+        {correoExistente && !recuperado && (
+          <button className="cat-btn cat-btn--ghost cat-btn--block" onClick={recuperarContrasena} disabled={enviando}>
+            ¿Olvidaste tu contraseña? Recupérala aquí
+          </button>
+        )}
+        <button
+          className="cat-btn cat-btn--primary cat-btn--block"
+          disabled={!acepto || !nombre.trim() || !correo.trim() || password.length < 6 || enviando}
+          onClick={crearCuenta}
+        >
+          {enviando ? "Un momento…" : "Crear mi cuenta"}
+        </button>
+        <button className="cat-interes-alt" style={{background:"none", border:"none", cursor:"pointer"}} onClick={() => { setModo("entrar"); setErr(""); }}>
+          Ya tengo cuenta, iniciar sesión
+        </button>
+      </div>
+      )}
+    </div>
+  );
+}
+
+function BuyerAuth({ onClose }) {
+  const [modo, setModo] = useState("inicio"); // inicio | crear
+  const [nombre, setNombre] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const [recuperado, setRecuperado] = useState(false);
+
+  async function conGoogle() {
+    setErr(""); setBusy(true);
+    try {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      const result = await window.__cecAuth.signInWithPopup(provider);
+      const u = result.user;
+      await guardarComprador(u.uid, {
+        nombre: u.displayName || "",
+        correo: u.email || "",
+      });
+      onClose();
+    } catch (e) {
+      setErr("No se pudo iniciar sesión con Google.");
+    } finally { setBusy(false); }
+  }
+
+  async function conCorreo() {
+    setErr(""); setBusy(true);
+    try {
+      if (modo === "crear") {
+        const result = await window.__cecAuth.createUserWithEmailAndPassword(email.trim(), password);
+        await guardarComprador(result.user.uid, { nombre: nombre.trim(), correo: email.trim() });
+      } else {
+        await window.__cecAuth.signInWithEmailAndPassword(email.trim(), password);
+      }
+      onClose();
+    } catch (e) {
+      setErr(modo === "crear" ? "No se pudo crear la cuenta. ¿Ya tienes una con ese correo?" : "Correo o contraseña incorrectos.");
+    } finally { setBusy(false); }
+  }
+
+  async function recuperarContrasena() {
+    if (!email.trim()) {
+      setErr("Escribe tu correo arriba primero, y luego dale a \"Olvidé mi contraseña\".");
+      return;
+    }
+    setErr(""); setBusy(true);
+    try {
+      const metodos = await window.__cecAuth.fetchSignInMethodsForEmail(email.trim());
+      if (metodos.length === 0) {
+        setErr("No encontramos ninguna cuenta con ese correo. Revisa que esté bien escrito.");
+        setBusy(false);
+        return;
+      }
+      await window.__cecAuth.sendPasswordResetEmail(email.trim());
+      setRecuperado(true);
+    } catch (e) {
+      setErr("No se pudo enviar el correo. Revisa que esté bien escrito.");
+    } finally { setBusy(false); }
+  }
+
+  return (
+    <div className="cat-screen">
+      <div className="cat-header">
+        <button className="cat-iconbtn" onClick={onClose} aria-label="Cerrar">←</button>
+        <div className="cat-header-title">{modo === "crear" ? "Crear cuenta" : "Iniciar sesión"}</div>
+      </div>
+      <div className="cec-form" style={{paddingTop: "10px"}}>
+        <button className="cat-btn cat-btn--google cat-btn--block" onClick={conGoogle} disabled={busy}>
+          🔵 Continuar con Google
+        </button>
+        <div className="cat-divider">o con tu correo</div>
+
+        {modo === "crear" && (
+          <label className="cec-field"><span>Tu nombre</span>
+            <input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Nombre completo" />
+          </label>
+        )}
+        <label className="cec-field"><span>Correo</span>
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+        </label>
+        <label className="cec-field"><span>Contraseña</span>
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+        </label>
+        {err && <p className="cec-error-text">{err}</p>}
+        {recuperado && <p className="cec-note" style={{color:"var(--moss)"}}>✅ Te mandamos un correo con instrucciones para poner una nueva contraseña.</p>}
+        <button className="cat-btn cat-btn--primary cat-btn--block" disabled={busy || !email || !password} onClick={conCorreo}>
+          {busy ? "Un momento…" : modo === "crear" ? "Crear cuenta" : "Entrar"}
+        </button>
+        {modo === "inicio" && (
+          <button style={{background:"none", border:"none", color:"var(--ink-soft)", fontSize:"12.5px", textDecoration:"underline", cursor:"pointer"}} onClick={recuperarContrasena} disabled={busy}>
+            ¿Olvidaste tu contraseña?
+          </button>
+        )}
+        <button className="cat-interes-alt" style={{background:"none", border:"none", cursor:"pointer"}}
+          onClick={() => setModo(modo === "crear" ? "inicio" : "crear")}>
+          {modo === "crear" ? "Ya tengo cuenta, iniciar sesión" : "No tengo cuenta, crear una"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function Catalogo() {
+  const [authChecked, setAuthChecked] = useState(false);
+  const [authUser, setAuthUser] = useState(null);
+  const [comprador, setComprador] = useState(null);
+  const [mostrarAuth, setMostrarAuth] = useState(false);
+  const [mostrarVender, setMostrarVender] = useState(false);
+  const [cerrandoSesion, setCerrandoSesion] = useState(false);
+
+  const [ready, setReady] = useState(false);
+  const [cargandoCategoria, setCargandoCategoria] = useState(false);
+  const [objetos, setObjetos] = useState([]);
+  const [categoriasCargadas, setCategoriasCargadas] = useState({});
+  const [casasMap, setCasasMap] = useState({});
+  const [vista, setVista] = useState("catalogo"); // catalogo | cuenta
+  const [filtro, setFiltro] = useState(CATEGORIES[0].key);
+  const [subFiltro, setSubFiltro] = useState("");
+  const [seleccionado, setSeleccionado] = useState(null);
+  const [fotosCompletasDetalle, setFotosCompletasDetalle] = useState([]);
+  const [cargandoFotoDetalle, setCargandoFotoDetalle] = useState(false);
+  const [indiceFotoDetalle, setIndiceFotoDetalle] = useState(0);
+  const [loadError, setLoadError] = useState("");
+  const [historial, setHistorial] = useState([]);
+
+  useEffect(() => {
+    setIndiceFotoDetalle(0);
+    const miniaturas = seleccionado && (seleccionado.fotos || (seleccionado.foto ? [seleccionado.foto] : []));
+    if (!seleccionado || !miniaturas || miniaturas.length === 0) { setFotosCompletasDetalle([]); return; }
+    setFotosCompletasDetalle([]);
+    setCargandoFotoDetalle(true);
+    fetchFotosCompletas(seleccionado.id)
+      .then((datas) => setFotosCompletasDetalle(datas))
+      .catch(() => {})
+      .finally(() => setCargandoFotoDetalle(false));
+  }, [seleccionado && seleccionado.id]);
+
+  useEffect(() => {
+    const unsub = window.__cecAuth.onAuthStateChanged(async (u) => {
+      setAuthUser(u);
+      if (u) {
+        const c = await fetchComprador(u.uid);
+        setComprador({ uid: u.uid, nombre: (c && c.nombre) || u.displayName || "", correo: (c && c.correo) || u.email || "", telefono: (c && c.telefono) || "", favoritos: (c && c.favoritos) || [] });
+      } else {
+        setComprador(null);
+      }
+      setAuthChecked(true);
+    });
+    return unsub;
+  }, []);
+
+  function mergeObjetos(lista) {
+    setObjetos((prev) => {
+      const mapa = new Map(prev.map((o) => [o.id, o]));
+      lista.forEach((o) => mapa.set(o.id, o));
+      return Array.from(mapa.values());
+    });
+  }
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const c = await fetchCasas();
+        setCasasMap(c);
+      } catch (e) {
+        setLoadError("No se pudo cargar el catálogo. Intenta de nuevo más tarde.");
+      }
+      setReady(true);
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (!ready) return;
+    if (categoriasCargadas[filtro]) return;
+    setCargandoCategoria(true);
+    fetchPublicadosDeCategoria(filtro)
+      .then((lista) => {
+        mergeObjetos(lista);
+        setCategoriasCargadas((prev) => ({ ...prev, [filtro]: true }));
+      })
+      .catch(() => setLoadError("No se pudo cargar esta categoría. Intenta de nuevo."))
+      .finally(() => setCargandoCategoria(false));
+  }, [ready, filtro]);
+
+  useEffect(() => {
+    if (comprador) {
+      fetchMiHistorial(comprador.uid).then(setHistorial).catch(() => {});
+      const idsFaltantes = comprador.favoritos.filter((id) => !objetos.some((o) => o.id === id));
+      if (idsFaltantes.length > 0) {
+        fetchObjetosPorIds(idsFaltantes).then(mergeObjetos).catch(() => {});
+      }
+    } else {
+      setHistorial([]);
+    }
+  }, [comprador && comprador.uid]);
+
+  async function marcarFavorito(objetoId, marcar) {
+    if (!comprador) { setMostrarAuth(true); return; }
+    setComprador((prev) => ({
+      ...prev,
+      favoritos: marcar ? [...prev.favoritos, objetoId] : prev.favoritos.filter((id) => id !== objetoId),
+    }));
+    try { await toggleFavorito(comprador.uid, objetoId, marcar); } catch {}
+  }
+
+  if (mostrarAuth) {
+    return <div className="cat-app-inner"><BuyerAuth onClose={() => setMostrarAuth(false)} /></div>;
+  }
+
+  if (mostrarVender) {
+    return <div className="cat-app-inner"><SolicitudVendedor onClose={() => setMostrarVender(false)} /></div>;
+  }
+
+  if (!ready || !authChecked) {
+    return (
+      <div className="cat-loading">
+        <div className="cat-loading-badge">🏷️</div>
+        <p>Cargando catálogo…</p>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="cat-loading">
+        <div className="cat-loading-badge">⚠️</div>
+        <p style={{maxWidth:"28ch", textAlign:"center"}}>{loadError}</p>
+      </div>
+    );
+  }
+
+  const visibles = objetos.filter((o) => o.categoria === filtro && (!subFiltro || o.subcategoria === subFiltro));
+  const subOpciones = SUBCATEGORIES[filtro];
+
+  function elegirCategoria(key) {
+    setFiltro(key);
+    setSubFiltro("");
+  }
+  const favoritosIds = comprador ? comprador.favoritos : [];
+  const misFavoritos = objetos.filter((o) => favoritosIds.includes(o.id));
+
+  if (seleccionado) {
+    const o = seleccionado;
+    const info = categoriaInfo(o.categoria);
+    const casa = casasMap[o.casaId];
+    const esFavorito = favoritosIds.includes(o.id);
+    return (
+      <div className="cat-screen">
+        <div className="cat-header">
+          <button className="cat-iconbtn" onClick={() => setSeleccionado(null)} aria-label="Volver">←</button>
+          <div className="cat-header-title">Detalle</div>
+          <button className="cat-iconbtn" onClick={() => marcarFavorito(o.id, !esFavorito)} aria-label="Favorito">
+            {esFavorito ? "❤️" : "🤍"}
+          </button>
+        </div>
+        <div className="cat-detail-photo">
+          {(() => {
+            const miniaturas = o.fotos || (o.foto ? [o.foto] : []);
+            const fotoAMostrar = fotosCompletasDetalle[indiceFotoDetalle] || miniaturas[indiceFotoDetalle];
+            return fotoAMostrar
+              ? <img src={fotoAMostrar} alt={o.nombre} style={cargandoFotoDetalle ? {filter:"blur(2px)"} : undefined} />
+              : <span>{info.icon}</span>;
+          })()}
+        </div>
+        {(o.fotos || []).length > 1 && (
+          <div className="cec-ficha-thumbs" style={{padding:"10px 20px 0"}}>
+            {o.fotos.map((m, i) => (
+              <button key={i} className={"cec-ficha-thumb" + (i === indiceFotoDetalle ? " active" : "")} onClick={() => setIndiceFotoDetalle(i)}>
+                <img src={m} alt="" />
+              </button>
+            ))}
+          </div>
+        )}
+        <div className="cat-detail-body">
+          <div className="cat-eyebrow">{info.icon} {info.label}{o.subcategoria ? " · " + o.subcategoria : ""}</div>
+          <h1 className="cat-detail-nombre">{o.nombre || "Sin nombre"}</h1>
+          <div className="cat-detail-precio">{formatPrecio(o.precio)}</div>
+          {casa && <div className="cat-detail-row"><span>Ubicación general</span><span>{casa.nombre}</span></div>}
+          {o.descripcion && <div className="cat-detail-block"><span className="cat-detail-label">Descripción</span><p>{o.descripcion}</p></div>}
+          {o.unidades != null && <div className="cat-detail-row"><span>Unidades disponibles</span><span>{o.unidades}</span></div>}
+          <InteresForm objeto={o} casa={casa} comprador={comprador} />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="cat-screen">
+      <div className="cat-hero">
+        <div style={{display:"flex", justifyContent:"space-between", alignItems:"flex-start"}}>
+          <div className="cat-hero-tab">🏷️</div>
+          {comprador ? (
+            <button className="cat-btn cat-btn--ghost" style={{fontSize:"12px", padding:"7px 12px", width:"auto"}} onClick={() => setVista(vista === "cuenta" ? "catalogo" : "cuenta")}>
+              {vista === "cuenta" ? "Ver catálogo" : "👤 " + (comprador.nombre || "Mi cuenta")}
+            </button>
+          ) : (
+            <button className="cat-btn cat-btn--ghost" style={{fontSize:"12px", padding:"7px 12px", width:"auto"}} onClick={() => setMostrarAuth(true)}>
+              Iniciar sesión
+            </button>
+          )}
+        </div>
+        <img src="/logo-casa-en-casa.png" alt="Casa en Casa" className="cat-hero-logo" />
+        <h1>Catálogo</h1>
+        <p>Objetos disponibles de Casa en Casa. Toca cualquiera para ver más y contactar.</p>
+        <p className="cat-hero-contact" style={{fontWeight:600}}>📍 Por ahora, solo compraventa dentro de la Ciudad de México.</p>
+        <p className="cat-hero-contact">Contacto: <a href={"mailto:" + CONTACT_EMAIL}>{CONTACT_EMAIL}</a></p>
+        <button className="cat-btn cat-btn--primary" style={{width:"auto", marginTop:"14px", fontSize:"13px", padding:"9px 16px"}} onClick={() => setMostrarVender(true)}>
+          💼 ¿Quieres vender aquí también?
+        </button>
+      </div>
+
+      {vista === "cuenta" ? (
+        <div className="cec-form">
+          <button className="cec-link-danger" disabled={cerrandoSesion}
+            onClick={() => { setCerrandoSesion(true); window.__cecAuth.signOut(); }}>
+            {cerrandoSesion ? "Cerrando…" : "Cerrar sesión"}
+          </button>
+          <h2 style={{fontFamily:"'Fraunces',serif", fontSize:"18px", margin:"10px 0 0"}}>❤️ Mis favoritos</h2>
+          {misFavoritos.length === 0 ? (
+            <p className="cec-note">Todavía no has marcado ningún favorito. Toca el corazón en cualquier objeto para guardarlo aquí.</p>
+          ) : (
+            <div className="cat-grid" style={{padding:"6px 0"}}>
+              {misFavoritos.map((o) => (
+                <button key={o.id} className="cat-card" onClick={() => setSeleccionado(o)}>
+                  <div className="cat-card-photo">
+                    {o.foto ? <img src={o.foto} alt={o.nombre} /> : <span>{categoriaInfo(o.categoria).icon}</span>}
+                  </div>
+                  <div className="cat-card-info">
+                    <div className="cat-card-nombre">{o.nombre || "Sin nombre"}</div>
+                    <div className="cat-card-precio">{formatPrecio(o.precio)}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+          <h2 style={{fontFamily:"'Fraunces',serif", fontSize:"18px", margin:"18px 0 0"}}>📨 Mi historial</h2>
+          {historial.length === 0 ? (
+            <p className="cec-note">Aún no has enviado ningún interés por un objeto.</p>
+          ) : (
+            <div style={{display:"flex", flexDirection:"column", gap:"8px"}}>
+              {historial.map((h) => (
+                <div key={h.id} className="cec-ficha-row" style={{background:"var(--card)", borderRadius:"10px", padding:"10px 12px", border:"1px solid var(--paper-line)"}}>
+                  <span>{h.objetoNombre || "Objeto"}</span>
+                  <span>{new Date(h.createdAt).toLocaleDateString("es-MX")}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        <React.Fragment>
+          <div className="cat-filters">
+            {CATEGORIES.map((c) => (
+              <button key={c.key} className={filtro === c.key ? "active" : ""} onClick={() => elegirCategoria(c.key)}>
+                {c.icon} {c.label}
+              </button>
+            ))}
+          </div>
+
+          {subOpciones && (
+            <div className="cat-filters cat-filters--sub">
+              {subOpciones.map((s) => (
+                <button key={s} className={subFiltro === s ? "active" : ""} onClick={() => setSubFiltro(subFiltro === s ? "" : s)}>
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="cat-grid">
+            {cargandoCategoria ? (
+              <p className="cec-note" style={{gridColumn:"1/-1", padding:"20px 0"}}>Cargando…</p>
+            ) : visibles.length === 0 ? (
+              <div className="cat-empty">
+                <div className="cat-empty-icon">🗂️</div>
+                <p className="cat-empty-title">Todavía no hay objetos publicados aquí</p>
+                <p className="cat-empty-hint">Vuelve pronto, se van agregando nuevos objetos seguido.</p>
+              </div>
+            ) : (
+              visibles.map((o) => {
+                const info = categoriaInfo(o.categoria);
+                const esFavorito = favoritosIds.includes(o.id);
+                return (
+                  <div key={o.id} className="cat-card" style={{cursor:"default"}}>
+                    <div className="cat-card-photo" onClick={() => setSeleccionado(o)} style={{cursor:"pointer"}}>
+                      {o.foto ? <img src={o.foto} alt={o.nombre} /> : <span>{info.icon}</span>}
+                      <button className="cat-fav-btn" onClick={(e) => { e.stopPropagation(); marcarFavorito(o.id, !esFavorito); }} aria-label="Favorito">
+                        {esFavorito ? "❤️" : "🤍"}
+                      </button>
+                    </div>
+                    <div className="cat-card-info" onClick={() => setSeleccionado(o)} style={{cursor:"pointer"}}>
+                      <div className="cat-card-nombre">{o.nombre || "Sin nombre"}</div>
+                      <div className="cat-card-precio">{formatPrecio(o.precio)}</div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          <div className="cat-footer">
+            ¿Buscas algo en especial? <a href={"mailto:" + CONTACT_EMAIL}>Escríbenos directo</a>
+          </div>
+        </React.Fragment>
+      )}
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<div className="cat-app"><Catalogo /></div>);
+</script>
+
+<script>
+  (function () {
+    try {
+      var source = document.getElementById("cec-source").textContent;
+      var compiled = Babel.transform(source, {
+        presets: [["react", { runtime: "classic" }]]
+      }).code;
+      var scriptEl = document.createElement("script");
+      scriptEl.textContent = compiled;
+      document.body.appendChild(scriptEl);
+    } catch (e) {
+      document.getElementById("root").innerHTML =
+        '<div style="padding:40px;font-family:sans-serif;color:#8B4444;">Error al preparar el catálogo: ' + e.message + '</div>';
+    }
+  })();
+</script>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>
