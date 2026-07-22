@@ -715,6 +715,12 @@ function Login() {
     setErr("");
     setBusy(true);
     try {
+      const metodos = await window.__cecAuth.fetchSignInMethodsForEmail(email.trim());
+      if (metodos.length === 0) {
+        setErr("No encontramos ninguna cuenta con ese correo. Revisa que esté bien escrito.");
+        setBusy(false);
+        return;
+      }
       await window.__cecAuth.sendPasswordResetEmail(email.trim());
       setRecuperado(true);
     } catch (e) {
@@ -867,12 +873,16 @@ function SolicitudesTab() {
 function Home({ casas, objetos, tab, onTabCasas, onTabCatalogo, onTabIntereses, onTabSolicitudes, cargando, currentUid, isAdmin, onOpenCasa, onNuevaCasa, onAbrirObjeto }) {
   const publicados = objetos.filter((o) => o.publicado && !o.vendido);
   const misCasas = isAdmin ? casas : casas.filter((c) => c.ownerId === currentUid);
+  const [cerrandoSesion, setCerrandoSesion] = useState(false);
   return (
     <div>
       <div className="cec-hero">
         <div style={{display:"flex", justifyContent:"space-between", alignItems:"flex-start"}}>
           <div className="cec-hero-tab">📁</div>
-          <button className="cec-btn cec-btn--ghost" style={{fontSize:"12px", padding:"7px 12px"}} onClick={() => window.__cecAuth.signOut()}>Cerrar sesión</button>
+          <button className="cec-btn cec-btn--ghost" style={{fontSize:"12px", padding:"7px 12px"}} disabled={cerrandoSesion}
+            onClick={() => { setCerrandoSesion(true); window.__cecAuth.signOut(); }}>
+            {cerrandoSesion ? "Cerrando…" : "Cerrar sesión"}
+          </button>
         </div>
         <h1>Casa en Casa</h1>
         <p>Tu archivador digital para organizar, fotografiar y dar salida a lo que ya no usas.</p>

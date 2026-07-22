@@ -424,7 +424,7 @@ const REGLAS_VENDEDOR = [
   },
   {
     titulo: "3. Publicación de artículos",
-    texto: "En Casa en Casa solo pueden anunciarse objetos habituales de una vivienda. Al publicar un artículo, es tu responsabilidad asegurarte de que las fotografías sean reales y del objeto que estás vendiendo, la descripción sea veraz, se indiquen los desperfectos si los hay, el artículo te pertenezca legítimamente, y que no se publiquen productos falsificados, robados o ilegales.",
+    texto: "Por ahora, Casa en Casa solo opera para compraventa dentro de la Ciudad de México. En Casa en Casa solo pueden anunciarse objetos habituales de una vivienda. Al publicar un artículo, es tu responsabilidad asegurarte de que las fotografías sean reales y del objeto que estás vendiendo, la descripción sea veraz, se indiquen los desperfectos si los hay, el artículo te pertenezca legítimamente, y que no se publiquen productos falsificados, robados o ilegales.",
   },
   {
     titulo: "4. Objetos prohibidos",
@@ -1255,6 +1255,7 @@ function Catalogo() {
         </div>
         <h1>Catálogo</h1>
         <p>Objetos disponibles de Casa en Casa. Toca cualquiera para ver más y contactar.</p>
+        <p className="cat-hero-contact" style={{fontWeight:600}}>📍 Por ahora, solo compraventa dentro de la Ciudad de México.</p>
         <p className="cat-hero-contact">Contacto: <a href={"mailto:" + CONTACT_EMAIL}>{CONTACT_EMAIL}</a></p>
         <button className="cat-btn cat-btn--primary" style={{width:"auto", marginTop:"14px", fontSize:"13px", padding:"9px 16px"}} onClick={() => setMostrarVender(true)}>
           💼 ¿Quieres vender aquí también?
