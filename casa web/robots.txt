@@ -1,6 +1,7 @@
 User-agent: *
+Allow: /
 Allow: /catalogo.html
-Disallow: /
+Disallow: /admin.html
 Disallow: /pago-exitoso.html
 Disallow: /pago-cancelado.html
 

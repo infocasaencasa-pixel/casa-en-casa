@@ -2,7 +2,7 @@
   "name": "Casa en Casa - Catálogo",
   "short_name": "Casa en Casa",
   "description": "Catálogo de objetos de segunda mano en la Ciudad de México",
-  "start_url": "/catalogo.html",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#F5F0E1",

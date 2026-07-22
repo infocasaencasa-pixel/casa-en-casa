@@ -9,7 +9,7 @@
 <meta property="og:description" content="Catálogo de objetos de segunda vida en la Ciudad de México: muebles, cocina, electrodomésticos, decoración y más." />
 <meta property="og:type" content="website" />
 <meta property="og:image" content="/icon-catalogo-512.png" />
-<link rel="canonical" href="https://casaencasamx.com/catalogo.html" />
+<link rel="canonical" href="https://casaencasamx.com/" />
 <link rel="manifest" href="/manifest-catalogo.json">
 <meta name="theme-color" content="#4B6350">
 <link rel="icon" href="/icon-catalogo-192.png">
@@ -300,6 +300,7 @@
     display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:10px;
   }
   .cat-hero h1{font-family:'Fraunces','Georgia',serif;font-size:30px;margin:0 0 6px;font-weight:600;}
+  .cat-hero-logo{display:block;height:48px;width:auto;margin:2px 0 10px;}
   .cat-hero p{margin:0;color:var(--ink-soft);font-size:14.5px;line-height:1.45;max-width:36ch;}
   .cat-hero-contact{margin-top:8px !important;font-size:12.5px !important;}
   .cat-hero-contact a{color:var(--moss);font-weight:600;text-decoration:none;}
@@ -892,7 +893,7 @@ function SolicitudVendedor({ onClose }) {
           <div className="cat-interes-ok">
             🎉 ¡Felicidades! Entraste en la promoción de inauguración — tu cuenta quedó activada gratis, sin pagar nada. Ya puedes iniciar sesión en tu panel y crear tu Casa.
           </div>
-          <a className="cat-btn cat-btn--primary cat-btn--block" href="/" style={{display:"block", textAlign:"center", textDecoration:"none"}}>
+          <a className="cat-btn cat-btn--primary cat-btn--block" href="/admin.html" style={{display:"block", textAlign:"center", textDecoration:"none"}}>
             Ir a mi panel
           </a>
         </div>
@@ -901,7 +902,7 @@ function SolicitudVendedor({ onClose }) {
           <div className="cat-interes-ok">
             ✅ Ya tienes una cuenta de vendedor activa. Ve a tu panel de administración para crear tu Casa y publicar objetos.
           </div>
-          <a className="cat-btn cat-btn--primary cat-btn--block" href="/" style={{display:"block", textAlign:"center", textDecoration:"none"}}>
+          <a className="cat-btn cat-btn--primary cat-btn--block" href="/admin.html" style={{display:"block", textAlign:"center", textDecoration:"none"}}>
             Ir a mi panel
           </a>
         </div>
@@ -1308,6 +1309,7 @@ function Catalogo() {
             </button>
           )}
         </div>
+        <img src="/logo-casa-en-casa.png" alt="Casa en Casa" className="cat-hero-logo" />
         <h1>Catálogo</h1>
         <p>Objetos disponibles de Casa en Casa. Toca cualquiera para ver más y contactar.</p>
         <p className="cat-hero-contact" style={{fontWeight:600}}>📍 Por ahora, solo compraventa dentro de la Ciudad de México.</p>
