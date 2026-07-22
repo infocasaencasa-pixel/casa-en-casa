@@ -187,6 +187,22 @@
   .cec-photo-picker img{width:100%;height:100%;object-fit:cover;}
   .cec-photo-placeholder{color:var(--ink-soft);font-size:14px;text-align:center;padding:0 16px;}
 
+  .cec-photos-row{display:flex;gap:10px;}
+  .cec-photo-slot{
+    position:relative;width:92px;height:92px;border-radius:12px;overflow:hidden;
+    border:1px solid var(--paper-line);background:var(--card);flex-shrink:0;
+  }
+  .cec-photo-slot img{width:100%;height:100%;object-fit:cover;}
+  .cec-photo-slot--add{
+    display:flex;align-items:center;justify-content:center;border:2px dashed var(--paper-line);
+    cursor:pointer;color:var(--ink-soft);font-size:13px;
+  }
+  .cec-photo-remove{
+    position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;
+    background:rgba(0,0,0,.55);color:#fff;border:none;font-size:11px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;padding:0;
+  }
+
   .cec-btn{
     border:none;border-radius:12px;padding:12px 16px;font-size:14.5px;font-weight:600;
     cursor:pointer;font-family:'Work Sans',sans-serif;
@@ -221,6 +237,13 @@
     display:flex;align-items:center;justify-content:center;font-size:48px;overflow:hidden;
   }
   .cec-ficha-photo img{width:100%;height:100%;object-fit:cover;}
+  .cec-ficha-thumbs{display:flex;gap:8px;padding:10px 20px 0;}
+  .cec-ficha-thumb{
+    width:52px;height:52px;border-radius:8px;overflow:hidden;border:2px solid transparent;
+    padding:0;cursor:pointer;background:var(--paper-line);
+  }
+  .cec-ficha-thumb.active{border-color:var(--moss);}
+  .cec-ficha-thumb img{width:100%;height:100%;object-fit:cover;}
   .cec-ficha-body{padding:18px 20px 30px;}
   .cec-eyebrow{
     font-family:'IBM Plex Mono','Courier New',monospace;font-size:11.5px;color:var(--ink-soft);
@@ -307,7 +330,7 @@ const ACCENTS = ["moss", "clay", "slate"];
 
 const SUBCATEGORIES = {
   muebles: ["Sofás", "Sillones", "Mesas auxiliares", "Mesas de comedor", "Sillas", "Escritorios", "Burós", "Camas", "Cómodas", "Aparadores", "Mecedoras"],
-  cocina: ["Vajillas", "Cubiertos", "Cuchillos", "Cucharas de servir", "Copas", "Vasos", "Ollas", "Sartenes", "Utensilios de cocina", "Manteles", "Recipientes para almacenar"],
+  cocina: ["Vajillas", "Cubiertos", "Cuchillos", "Cucharas de servir", "Copas", "Vasos", "Ollas", "Sartenes", "Pequeños electrodomésticos", "Utensilios de cocina", "Manteles", "Recipientes para almacenar"],
   electro: ["Pequeños electrodomésticos", "Cafeteras", "Licuadoras", "Tostadores", "Hornos eléctricos", "Microondas", "Aspiradoras", "Otros aparatos del hogar"],
   textiles: ["Sábanas", "Toallas", "Edredones", "Almohadas", "Cobijas", "Manteles", "Otros textiles"],
   decoracion: ["Lámparas", "Espejos", "Cristal cortado", "Cuadros", "Adornos", "Floreros", "Objetos decorativos"],
@@ -354,12 +377,20 @@ function compressImage(file) {
   });
 }
 
-async function guardarFotoCompleta(objetoId, dataUrl) {
-  await window.__cecDb.collection("fotos").doc(objetoId).set({ data: dataUrl });
+async function guardarFotosCompletas(objetoId, datas) {
+  await window.__cecDb.collection("fotos").doc(objetoId).set({ datas });
+}
+async function fetchFotosCompletas(objetoId) {
+  const doc = await window.__cecDb.collection("fotos").doc(objetoId).get();
+  if (!doc.exists) return [];
+  const d = doc.data();
+  if (Array.isArray(d.datas)) return d.datas;
+  if (d.data) return [d.data]; // compatibilidad con objetos guardados antes de este cambio
+  return [];
 }
 async function fetchFotoCompleta(objetoId) {
-  const doc = await window.__cecDb.collection("fotos").doc(objetoId).get();
-  return doc.exists ? doc.data().data : null;
+  const datas = await fetchFotosCompletas(objetoId);
+  return datas[0] || null;
 }
 
 /* ---------- Firestore helpers ---------- */
@@ -500,7 +531,7 @@ function CasaEnCasa() {
   }
 
   async function crearObjeto(casaId, categoria, data) {
-    const { fotoCompletaNueva, ...datosObjeto } = data;
+    const { fotosCompletas, ...datosObjeto } = data;
     const base = { casaId, categoria, publicado: false, vendido: false, ...datosObjeto };
     try {
       const id = await addObjetoDoc(base);
@@ -511,9 +542,9 @@ function CasaEnCasa() {
           totalObjetos: firebase.firestore.FieldValue.increment(1),
         });
       } catch (e) { console.error("No se pudo actualizar el contador de la casa:", e); }
-      if (fotoCompletaNueva) {
-        try { await guardarFotoCompleta(id, fotoCompletaNueva); }
-        catch (e) { console.error("No se pudo guardar la foto completa:", e); }
+      if (fotosCompletas && fotosCompletas.length) {
+        try { await guardarFotosCompletas(id, fotosCompletas); }
+        catch (e) { console.error("No se pudo guardar las fotos completas:", e); }
       }
       notify("Objeto guardado");
       pop();
@@ -523,12 +554,12 @@ function CasaEnCasa() {
   }
 
   async function actualizarObjeto(id, patch) {
-    const { fotoCompletaNueva, ...cambios } = patch;
+    const { fotosCompletas, ...cambios } = patch;
     setObjetos((prev) => prev.map((o) => (o.id === id ? { ...o, ...cambios } : o)));
     try {
       await updateObjetoDoc(id, cambios);
-      if (fotoCompletaNueva) {
-        await guardarFotoCompleta(id, fotoCompletaNueva);
+      if (fotosCompletas && fotosCompletas.length) {
+        await guardarFotosCompletas(id, fotosCompletas);
       }
     } catch (e) { console.error(e);
       notify("No se pudo guardar el cambio. Intenta de nuevo.");
@@ -1087,8 +1118,15 @@ function ObjetoCard({ objeto, onClick }) {
 function ObjetoForm({ categoria, existente, onBack, onGuardar }) {
   const info = categoriaInfo(categoria);
   const esEdicion = !!existente;
-  const [foto, setFoto] = useState(existente ? existente.foto || null : null);
-  const [fotoCompletaNueva, setFotoCompletaNueva] = useState(null);
+  const [slots, setSlots] = useState(() => {
+    if (existente && Array.isArray(existente.fotos) && existente.fotos.length) {
+      return existente.fotos.map((mini, i) => ({ key: "orig-" + i, miniatura: mini, completa: null, origenIndex: i }));
+    }
+    if (existente && existente.foto) {
+      return [{ key: "orig-0", miniatura: existente.foto, completa: null, origenIndex: 0 }];
+    }
+    return [];
+  });
   const [nombre, setNombre] = useState(existente ? existente.nombre || "" : "");
   const [subcategoria, setSubcategoria] = useState(existente ? existente.subcategoria || "" : "");
   const [ubicacion, setUbicacion] = useState(existente ? existente.ubicacion || "" : "");
@@ -1103,41 +1141,72 @@ function ObjetoForm({ categoria, existente, onBack, onGuardar }) {
 
   async function handleFile(e) {
     const file = e.target.files && e.target.files[0];
+    e.target.value = "";
     if (!file) return;
+    if (slots.length >= 3) return;
     setBusy(true); setErr("");
     try {
       const { miniatura, completa } = await compressImage(file);
-      setFoto(miniatura);
-      setFotoCompletaNueva(completa);
+      setSlots((prev) => [...prev, { key: "new-" + Date.now(), miniatura, completa, origenIndex: null }]);
     } catch (e) { console.error(e);
       setErr("No se pudo procesar la foto. Intenta con otra imagen.");
     } finally { setBusy(false); }
   }
 
-  function guardar() {
+  function quitarFoto(key) {
+    setSlots((prev) => prev.filter((s) => s.key !== key));
+  }
+
+  async function guardar() {
     setSaving(true);
-    onGuardar({
-      foto,
-      fotoCompletaNueva,
-      nombre: nombre.trim(),
-      subcategoria: subcategoria.trim(),
-      ubicacion: ubicacion.trim(),
-      precio: precio ? Number(precio) : null,
-      descripcion: descripcion.trim(),
-      unidades: unidades ? Number(unidades) : 1,
-    });
+    setErr("");
+    try {
+      let completasExistentes = null;
+      const fotosCompletas = [];
+      for (const s of slots) {
+        if (s.completa) { fotosCompletas.push(s.completa); continue; }
+        if (completasExistentes === null) {
+          completasExistentes = existente ? await fetchFotosCompletas(existente.id) : [];
+        }
+        fotosCompletas.push(completasExistentes[s.origenIndex] || s.miniatura);
+      }
+      onGuardar({
+        foto: slots[0] ? slots[0].miniatura : null, // se mantiene por compatibilidad con el resto de la app
+        fotos: slots.map((s) => s.miniatura),
+        fotosCompletas,
+        nombre: nombre.trim(),
+        subcategoria: subcategoria.trim(),
+        ubicacion: ubicacion.trim(),
+        precio: precio ? Number(precio) : null,
+        descripcion: descripcion.trim(),
+        unidades: unidades ? Number(unidades) : 1,
+      });
+    } catch (e) {
+      console.error(e);
+      setErr("No se pudieron preparar las fotos. Intenta de nuevo.");
+      setSaving(false);
+    }
   }
 
   return (
     <div>
       <Header title={esEdicion ? "Editar objeto" : `Añadir a ${info.label}`} onBack={onBack} />
       <div className="cec-form">
-        <div className="cec-photo-picker" onClick={() => fileRef.current && fileRef.current.click()}>
-          {foto ? <img src={foto} alt="Vista previa" /> : (
-            <div className="cec-photo-placeholder"><span>{busy ? "Procesando…" : "📷 Tomar o subir foto"}</span></div>
+        <div className="cec-photos-row">
+          {slots.map((s) => (
+            <div key={s.key} className="cec-photo-slot">
+              <img src={s.miniatura} alt="Vista previa" />
+              <button type="button" className="cec-photo-remove" onClick={() => quitarFoto(s.key)} aria-label="Quitar foto">✕</button>
+            </div>
+          ))}
+          {slots.length < 3 && (
+            <div className="cec-photo-slot cec-photo-slot--add" onClick={() => fileRef.current && fileRef.current.click()}>
+              <span>{busy ? "…" : "📷 +"}</span>
+            </div>
           )}
           <input ref={fileRef} type="file" accept="image/*" hidden onChange={handleFile} />
         </div>
+        <p className="cec-note">Hasta 3 fotos por objeto. Toca "+" para agregar una.</p>
         {err && <p className="cec-error-text">{err}</p>}
 
         <label className="cec-field"><span>Nombre del objeto</span>
@@ -1179,14 +1248,17 @@ function ObjetoForm({ categoria, existente, onBack, onGuardar }) {
 
 function ObjetoFicha({ objeto, readOnly, onBack, onUpdate, onDelete, onEditar }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [fotoCompleta, setFotoCompleta] = useState(null);
+  const [fotosCompletas, setFotosCompletas] = useState([]);
   const [cargandoFoto, setCargandoFoto] = useState(false);
+  const [indiceFoto, setIndiceFoto] = useState(0);
 
   useEffect(() => {
-    if (!objeto || !objeto.foto) return;
+    setIndiceFoto(0);
+    const miniaturas = objeto && (objeto.fotos || (objeto.foto ? [objeto.foto] : []));
+    if (!objeto || !miniaturas || miniaturas.length === 0) return;
     setCargandoFoto(true);
-    fetchFotoCompleta(objeto.id)
-      .then((data) => setFotoCompleta(data))
+    fetchFotosCompletas(objeto.id)
+      .then((datas) => setFotosCompletas(datas))
       .catch(() => {})
       .finally(() => setCargandoFoto(false));
   }, [objeto && objeto.id]);
@@ -1195,7 +1267,8 @@ function ObjetoFicha({ objeto, readOnly, onBack, onUpdate, onDelete, onEditar })
     return (<div><Header title="Ficha" onBack={onBack} /><EmptyState icon="⚠️" title="Este objeto ya no existe" /></div>);
   }
   const info = categoriaInfo(objeto.categoria);
-  const fotoAMostrar = fotoCompleta || objeto.foto;
+  const miniaturas = objeto.fotos || (objeto.foto ? [objeto.foto] : []);
+  const fotoAMostrar = fotosCompletas[indiceFoto] || miniaturas[indiceFoto];
   return (
     <div>
       <Header title="Ficha del objeto" onBack={onBack} />
@@ -1206,6 +1279,15 @@ function ObjetoFicha({ objeto, readOnly, onBack, onUpdate, onDelete, onEditar })
         {objeto.vendido && <span className="cec-badge cec-badge--sold cec-badge--float">Vendido</span>}
         {!objeto.vendido && objeto.publicado && <span className="cec-badge cec-badge--live cec-badge--float">Publicado</span>}
       </div>
+      {miniaturas.length > 1 && (
+        <div className="cec-ficha-thumbs">
+          {miniaturas.map((m, i) => (
+            <button key={i} className={"cec-ficha-thumb" + (i === indiceFoto ? " active" : "")} onClick={() => setIndiceFoto(i)}>
+              <img src={m} alt="" />
+            </button>
+          ))}
+        </div>
+      )}
       <div className="cec-ficha-body">
         <div className="cec-eyebrow">{info.icon} {info.label}{objeto.subcategoria ? ` · ${objeto.subcategoria}` : ""}</div>
         <h2 className="cec-ficha-nombre">{objeto.nombre || "Sin nombre"}</h2>

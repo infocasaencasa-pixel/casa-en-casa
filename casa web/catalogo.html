@@ -355,6 +355,13 @@
     font-size:48px;overflow:hidden;
   }
   .cat-detail-photo img{width:100%;height:100%;object-fit:cover;}
+  .cec-ficha-thumbs{display:flex;gap:8px;}
+  .cec-ficha-thumb{
+    width:52px;height:52px;border-radius:8px;overflow:hidden;border:2px solid transparent;
+    padding:0;cursor:pointer;background:var(--paper-line);
+  }
+  .cec-ficha-thumb.active{border-color:var(--moss);}
+  .cec-ficha-thumb img{width:100%;height:100%;object-fit:cover;}
   .cat-detail-body{padding:18px 20px 40px;}
   .cat-eyebrow{
     font-family:'IBM Plex Mono','Courier New',monospace;font-size:11.5px;color:var(--ink-soft);
@@ -502,7 +509,7 @@ const CATEGORIES = [
 
 const SUBCATEGORIES = {
   muebles: ["Sofás", "Sillones", "Mesas auxiliares", "Mesas de comedor", "Sillas", "Escritorios", "Burós", "Camas", "Cómodas", "Aparadores", "Mecedoras"],
-  cocina: ["Vajillas", "Cubiertos", "Cuchillos", "Cucharas de servir", "Copas", "Vasos", "Ollas", "Sartenes", "Utensilios de cocina", "Manteles", "Recipientes para almacenar"],
+  cocina: ["Vajillas", "Cubiertos", "Cuchillos", "Cucharas de servir", "Copas", "Vasos", "Ollas", "Sartenes", "Pequeños electrodomésticos", "Utensilios de cocina", "Manteles", "Recipientes para almacenar"],
   electro: ["Pequeños electrodomésticos", "Cafeteras", "Licuadoras", "Tostadores", "Hornos eléctricos", "Microondas", "Aspiradoras", "Otros aparatos del hogar"],
   textiles: ["Sábanas", "Toallas", "Edredones", "Almohadas", "Cobijas", "Manteles", "Otros textiles"],
   decoracion: ["Lámparas", "Espejos", "Cristal cortado", "Cuadros", "Adornos", "Floreros", "Objetos decorativos"],
@@ -548,9 +555,13 @@ async function fetchPublicadosDeCategoria(categoria) {
     .filter((o) => !o.vendido)
     .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 }
-async function fetchFotoCompleta(objetoId) {
+async function fetchFotosCompletas(objetoId) {
   const doc = await window.__cecDb.collection("fotos").doc(objetoId).get();
-  return doc.exists ? doc.data().data : null;
+  if (!doc.exists) return [];
+  const d = doc.data();
+  if (Array.isArray(d.datas)) return d.datas;
+  if (d.data) return [d.data];
+  return [];
 }
 async function fetchObjetosPorIds(ids) {
   if (!ids || ids.length === 0) return [];
@@ -1109,17 +1120,20 @@ function Catalogo() {
   const [filtro, setFiltro] = useState(CATEGORIES[0].key);
   const [subFiltro, setSubFiltro] = useState("");
   const [seleccionado, setSeleccionado] = useState(null);
-  const [fotoCompletaDetalle, setFotoCompletaDetalle] = useState(null);
+  const [fotosCompletasDetalle, setFotosCompletasDetalle] = useState([]);
   const [cargandoFotoDetalle, setCargandoFotoDetalle] = useState(false);
+  const [indiceFotoDetalle, setIndiceFotoDetalle] = useState(0);
   const [loadError, setLoadError] = useState("");
   const [historial, setHistorial] = useState([]);
 
   useEffect(() => {
-    if (!seleccionado || !seleccionado.foto) { setFotoCompletaDetalle(null); return; }
-    setFotoCompletaDetalle(null);
+    setIndiceFotoDetalle(0);
+    const miniaturas = seleccionado && (seleccionado.fotos || (seleccionado.foto ? [seleccionado.foto] : []));
+    if (!seleccionado || !miniaturas || miniaturas.length === 0) { setFotosCompletasDetalle([]); return; }
+    setFotosCompletasDetalle([]);
     setCargandoFotoDetalle(true);
-    fetchFotoCompleta(seleccionado.id)
-      .then((data) => setFotoCompletaDetalle(data))
+    fetchFotosCompletas(seleccionado.id)
+      .then((datas) => setFotosCompletasDetalle(datas))
       .catch(() => {})
       .finally(() => setCargandoFotoDetalle(false));
   }, [seleccionado && seleccionado.id]);
@@ -1243,8 +1257,23 @@ function Catalogo() {
           </button>
         </div>
         <div className="cat-detail-photo">
-          {(fotoCompletaDetalle || o.foto) ? <img src={fotoCompletaDetalle || o.foto} alt={o.nombre} style={cargandoFotoDetalle ? {filter:"blur(2px)"} : undefined} /> : <span>{info.icon}</span>}
+          {(() => {
+            const miniaturas = o.fotos || (o.foto ? [o.foto] : []);
+            const fotoAMostrar = fotosCompletasDetalle[indiceFotoDetalle] || miniaturas[indiceFotoDetalle];
+            return fotoAMostrar
+              ? <img src={fotoAMostrar} alt={o.nombre} style={cargandoFotoDetalle ? {filter:"blur(2px)"} : undefined} />
+              : <span>{info.icon}</span>;
+          })()}
         </div>
+        {(o.fotos || []).length > 1 && (
+          <div className="cec-ficha-thumbs" style={{padding:"10px 20px 0"}}>
+            {o.fotos.map((m, i) => (
+              <button key={i} className={"cec-ficha-thumb" + (i === indiceFotoDetalle ? " active" : "")} onClick={() => setIndiceFotoDetalle(i)}>
+                <img src={m} alt="" />
+              </button>
+            ))}
+          </div>
+        )}
         <div className="cat-detail-body">
           <div className="cat-eyebrow">{info.icon} {info.label}{o.subcategoria ? " · " + o.subcategoria : ""}</div>
           <h1 className="cat-detail-nombre">{o.nombre || "Sin nombre"}</h1>
