@@ -92,9 +92,6 @@
   .cec-hero h1{
     font-family:'Fraunces','Georgia',serif;font-size:30px;margin:0 0 6px;font-weight:600;
   }
-  .cec-hero-logo{
-    display:block;height:56px;width:auto;margin:2px 0 8px;
-  }
   .cec-hero p{margin:0;color:var(--ink-soft);font-size:14.5px;line-height:1.45;max-width:34ch;}
 
   .cec-segmented{
@@ -369,7 +366,7 @@ function compressImage(file) {
           return canvas.toDataURL("image/jpeg", calidad);
         };
         resolve({
-          miniatura: hacerVersion(260, 0.55),
+          miniatura: hacerVersion(200, 0.48),
           completa: hacerVersion(900, 0.7),
         });
       };
@@ -945,7 +942,7 @@ function Home({ casas, objetos, tab, onTabCasas, onTabCatalogo, onTabIntereses, 
             {cerrandoSesion ? "Cerrando…" : "Cerrar sesión"}
           </button>
         </div>
-        <img src="/logo-casa-en-casa.png" alt="Casa en Casa" className="cec-hero-logo" />
+        <h1>Casa en Casa</h1>
         <p>Tu archivador digital para organizar, fotografiar y dar salida a lo que ya no usas.</p>
       </div>
 
@@ -1105,7 +1102,7 @@ function ObjetoCard({ objeto, onClick }) {
   return (
     <button className="cec-obj-card" onClick={onClick}>
       <div className="cec-obj-photo">
-        {objeto.foto ? <img src={objeto.foto} alt={objeto.nombre} /> : <span>{categoriaInfo(objeto.categoria).icon}</span>}
+        {objeto.foto ? <img src={objeto.foto} alt={objeto.nombre} loading="lazy" decoding="async" /> : <span>{categoriaInfo(objeto.categoria).icon}</span>}
         {objeto.vendido && <span className="cec-badge cec-badge--sold">Vendido</span>}
         {!objeto.vendido && objeto.publicado && <span className="cec-badge cec-badge--live">Publicado</span>}
       </div>

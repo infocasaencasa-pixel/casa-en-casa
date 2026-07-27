@@ -300,7 +300,6 @@
     display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:10px;
   }
   .cat-hero h1{font-family:'Fraunces','Georgia',serif;font-size:30px;margin:0 0 6px;font-weight:600;}
-  .cat-hero-logo{display:block;height:48px;width:auto;margin:2px 0 10px;}
   .cat-hero p{margin:0;color:var(--ink-soft);font-size:14.5px;line-height:1.45;max-width:36ch;}
   .cat-hero-contact{margin-top:8px !important;font-size:12.5px !important;}
   .cat-hero-contact a{color:var(--moss);font-weight:600;text-decoration:none;}
@@ -1309,7 +1308,6 @@ function Catalogo() {
             </button>
           )}
         </div>
-        <img src="/logo-casa-en-casa.png" alt="Casa en Casa" className="cat-hero-logo" />
         <h1>Catálogo</h1>
         <p>Objetos disponibles de Casa en Casa. Toca cualquiera para ver más y contactar.</p>
         <p className="cat-hero-contact" style={{fontWeight:600}}>📍 Por ahora, solo compraventa dentro de la Ciudad de México.</p>
@@ -1333,7 +1331,7 @@ function Catalogo() {
               {misFavoritos.map((o) => (
                 <button key={o.id} className="cat-card" onClick={() => setSeleccionado(o)}>
                   <div className="cat-card-photo">
-                    {o.foto ? <img src={o.foto} alt={o.nombre} /> : <span>{categoriaInfo(o.categoria).icon}</span>}
+                    {o.foto ? <img src={o.foto} alt={o.nombre} loading="lazy" decoding="async" /> : <span>{categoriaInfo(o.categoria).icon}</span>}
                   </div>
                   <div className="cat-card-info">
                     <div className="cat-card-nombre">{o.nombre || "Sin nombre"}</div>
@@ -1393,7 +1391,7 @@ function Catalogo() {
                 return (
                   <div key={o.id} className="cat-card" style={{cursor:"default"}}>
                     <div className="cat-card-photo" onClick={() => setSeleccionado(o)} style={{cursor:"pointer"}}>
-                      {o.foto ? <img src={o.foto} alt={o.nombre} /> : <span>{info.icon}</span>}
+                      {o.foto ? <img src={o.foto} alt={o.nombre} loading="lazy" decoding="async" /> : <span>{info.icon}</span>}
                       <button className="cat-fav-btn" onClick={(e) => { e.stopPropagation(); marcarFavorito(o.id, !esFavorito); }} aria-label="Favorito">
                         {esFavorito ? "❤️" : "🤍"}
                       </button>
