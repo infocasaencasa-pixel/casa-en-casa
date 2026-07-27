@@ -1136,6 +1136,11 @@ function Catalogo() {
     setIndiceFotoDetalle(0);
     const miniaturas = seleccionado && (seleccionado.fotos || (seleccionado.foto ? [seleccionado.foto] : []));
     if (!seleccionado || !miniaturas || miniaturas.length === 0) { setFotosCompletasDetalle([]); return; }
+    // Si el objeto ya tiene fotos en R2, las usamos directo (mucho más rápido).
+    if (seleccionado.fotosUrls && seleccionado.fotosUrls.length) {
+      setFotosCompletasDetalle(seleccionado.fotosUrls);
+      return;
+    }
     setFotosCompletasDetalle([]);
     setCargandoFotoDetalle(true);
     fetchFotosCompletas(seleccionado.id)

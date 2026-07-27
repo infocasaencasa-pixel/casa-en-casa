@@ -378,6 +378,17 @@ function compressImage(file) {
   });
 }
 
+async function subirFotoAR2(objetoId, indice, dataUrl) {
+  const res = await fetch("/api/subir-foto", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ objetoId, indice, dataUrl }),
+  });
+  const data = await res.json();
+  if (!res.ok || !data.ok) throw new Error(data.error || "No se pudo subir la foto.");
+  return data.url;
+}
+
 async function guardarFotosCompletas(objetoId, datas) {
   await window.__cecDb.collection("fotos").doc(objetoId).set({ datas });
 }
@@ -531,6 +542,24 @@ function CasaEnCasa() {
     }
   }
 
+  async function subirFotos(objetoId, fotosCompletas) {
+    // Sube cada foto a R2 y devuelve sus direcciones. Si R2 falla, guarda en Firestore como respaldo.
+    try {
+      const urls = [];
+      for (let i = 0; i < fotosCompletas.length; i++) {
+        const foto = fotosCompletas[i];
+        if (typeof foto === "string" && foto.startsWith("http")) { urls.push(foto); continue; }
+        urls.push(await subirFotoAR2(objetoId, i, foto));
+      }
+      await updateObjetoDoc(objetoId, { fotosUrls: urls });
+      setObjetos((prev) => prev.map((o) => (o.id === objetoId ? { ...o, fotosUrls: urls } : o)));
+    } catch (e) {
+      console.error("No se pudo subir a R2, usando respaldo:", e);
+      try { await guardarFotosCompletas(objetoId, fotosCompletas); }
+      catch (e2) { console.error("Tampoco se pudo guardar el respaldo:", e2); }
+    }
+  }
+
   async function crearObjeto(casaId, categoria, data) {
     const { fotosCompletas, ...datosObjeto } = data;
     const base = { casaId, categoria, publicado: false, vendido: false, ...datosObjeto };
@@ -544,8 +573,7 @@ function CasaEnCasa() {
         });
       } catch (e) { console.error("No se pudo actualizar el contador de la casa:", e); }
       if (fotosCompletas && fotosCompletas.length) {
-        try { await guardarFotosCompletas(id, fotosCompletas); }
-        catch (e) { console.error("No se pudo guardar las fotos completas:", e); }
+        await subirFotos(id, fotosCompletas);
       }
       notify("Objeto guardado");
       pop();
@@ -560,7 +588,7 @@ function CasaEnCasa() {
     try {
       await updateObjetoDoc(id, cambios);
       if (fotosCompletas && fotosCompletas.length) {
-        await guardarFotosCompletas(id, fotosCompletas);
+        await subirFotos(id, fotosCompletas);
       }
     } catch (e) { console.error(e);
       notify("No se pudo guardar el cambio. Intenta de nuevo.");
@@ -1257,6 +1285,11 @@ function ObjetoFicha({ objeto, readOnly, onBack, onUpdate, onDelete, onEditar })
     setIndiceFoto(0);
     const miniaturas = objeto && (objeto.fotos || (objeto.foto ? [objeto.foto] : []));
     if (!objeto || !miniaturas || miniaturas.length === 0) return;
+    // Si el objeto ya tiene fotos en R2, las usamos directo (mucho más rápido).
+    if (objeto.fotosUrls && objeto.fotosUrls.length) {
+      setFotosCompletas(objeto.fotosUrls);
+      return;
+    }
     setCargandoFoto(true);
     fetchFotosCompletas(objeto.id)
       .then((datas) => setFotosCompletas(datas))
