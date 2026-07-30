@@ -1,15 +1,21 @@
-// Service worker mínimo, solo para que el navegador ofrezca "Instalar app".
-// No cachea nada de forma agresiva: siempre deja pasar las peticiones a la red,
-// para que Casa en Casa siga mostrando datos frescos de Firebase/Stripe.
+// Service worker que fuerza actualización automática cuando hay cambios.
+const VERSION = "v3";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
-  self.clients.claim();
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(keys.map((key) => caches.delete(key)))
+    ).then(() => self.clients.claim())
+  );
 });
 
 self.addEventListener("fetch", (event) => {
-  event.respondWith(fetch(event.request));
+  // Siempre va a la red, nunca sirve desde caché
+  event.respondWith(
+    fetch(event.request).catch(() => caches.match(event.request))
+  );
 });
