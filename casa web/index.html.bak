@@ -8,6 +8,7 @@
 <meta property="og:title" content="Casa en Casa — Muebles y artículos usados en CDMX" />
 <meta property="og:description" content="Catálogo de objetos de segunda vida en la Ciudad de México: muebles, cocina, electrodomésticos, decoración y más." />
 <meta property="og:type" content="website" />
+<meta property="og:url" content="https://casaencasamx.com/" />
 <meta property="og:image" content="/icon-catalogo-512.png" />
 <link rel="canonical" href="https://casaencasamx.com/" />
 <link rel="manifest" href="/manifest-catalogo.json">
@@ -277,9 +278,75 @@
     justify-content:center;
   }
   .cat-app *{box-sizing:border-box;}
+  /* En móvil: columna única centrada hasta 520px */
   .cat-screen{width:100%;max-width:520px;min-height:100vh;background:var(--paper);}
-  @media(min-width:768px){.cat-screen{max-width:760px;}.cat-grid{grid-template-columns:1fr 1fr 1fr;}}
-  @media(min-width:1100px){.cat-screen{max-width:1040px;}.cat-grid{grid-template-columns:1fr 1fr 1fr 1fr;}}
+  /* En escritorio (>768px): layout de dos columnas con panel lateral */
+  @media (min-width:768px){
+    .cat-app{
+      align-items:flex-start;
+      padding:0;
+    }
+    .cat-screen{
+      max-width:100%;
+      width:100%;
+      display:grid;
+      grid-template-columns:340px 1fr;
+      grid-template-rows:auto 1fr;
+      min-height:100vh;
+    }
+    /* Header ocupa todo el ancho */
+    .cat-header{
+      grid-column:1/-1;
+    }
+    /* Hero en columna izquierda */
+    .cat-hero{
+      grid-column:1;
+      grid-row:2;
+      position:sticky;
+      top:65px;
+      align-self:start;
+      border-right:1px solid var(--paper-line);
+      padding:32px 28px;
+      min-height:calc(100vh - 65px);
+    }
+    /* Filtros + grid en columna derecha */
+    .cat-filters{
+      padding:24px 28px 12px;
+    }
+    .cat-filters--sub{
+      padding-top:0;
+      padding-left:28px;
+      padding-right:28px;
+    }
+    .cat-grid{
+      padding:8px 28px 40px;
+      grid-template-columns:repeat(3,1fr);
+    }
+    .cat-footer{
+      padding:10px 28px 40px;
+    }
+    /* El panel de cuenta y detalle deben expandirse a ambas columnas */
+    .cat-screen--full{
+      display:block !important;
+    }
+    /* Clase para pantallas donde el contenido ocupa todo (detalle, cuenta, auth) */
+    .cat-detail-full{
+      grid-column:1/-1;
+      max-width:640px;
+      margin:0 auto;
+      width:100%;
+      padding-top:8px;
+    }
+  }
+  @media (min-width:1200px){
+    .cat-screen{
+      max-width:1100px;
+      grid-template-columns:360px 1fr;
+    }
+    .cat-grid{
+      grid-template-columns:repeat(4,1fr);
+    }
+  }
   .cat-loading{
     display:flex;flex-direction:column;align-items:center;justify-content:center;
     height:100vh;width:100%;gap:12px;color:var(--ink-soft);
@@ -287,24 +354,46 @@
   .cat-loading-badge{font-size:36px;}
 
   .cat-header{
-    display:flex;align-items:center;gap:10px;padding:18px 16px 10px;
+    display:flex;align-items:center;gap:10px;padding:14px 16px 10px;
     position:sticky;top:0;background:var(--paper);z-index:5;border-bottom:1px solid var(--paper-line);
   }
-  .cat-header-title{font-family:'Fraunces','Georgia',serif;font-weight:600;font-size:18px;}
+  .cat-header-title{font-family:'Fraunces','Georgia',serif;font-weight:600;font-size:18px;flex:1;}
+  .cat-header-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;}
   .cat-iconbtn{
     width:36px;height:36px;border-radius:50%;border:1px solid var(--paper-line);
     background:var(--card);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;
   }
+  /* Menú compartir */
+  .cat-share-menu{
+    position:absolute;top:calc(100% + 6px);right:16px;background:var(--card);
+    border:1px solid var(--paper-line);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);
+    z-index:100;min-width:200px;overflow:hidden;
+  }
+  .cat-share-menu button{
+    display:flex;align-items:center;gap:10px;width:100%;padding:12px 16px;
+    border:none;background:transparent;font-size:14px;font-family:'Work Sans',sans-serif;
+    color:var(--ink);cursor:pointer;text-align:left;
+  }
+  .cat-share-menu button:hover{background:var(--paper);}
+  .cat-share-menu button + button{border-top:1px solid var(--paper-line);}
+  @media (min-width:768px){
+    .cat-header{padding:14px 28px 10px;}
+    .cat-share-menu{right:28px;}
+  }
 
-  .cat-hero{padding:26px 20px 16px;}
+  .cat-hero{padding:22px 20px 16px;}
   .cat-hero-tab{
     width:46px;height:46px;border-radius:12px;background:var(--clay);color:#fff;
     display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:10px;
   }
-  .cat-hero h1{font-family:'Fraunces','Georgia',serif;font-size:30px;margin:0 0 6px;font-weight:600;}
-  .cat-hero p{margin:0;color:var(--ink-soft);font-size:14.5px;line-height:1.45;max-width:36ch;}
+  .cat-hero h1{font-family:'Fraunces','Georgia',serif;font-size:28px;margin:0 0 6px;font-weight:600;}
+  .cat-hero p{margin:0;color:var(--ink-soft);font-size:14px;line-height:1.45;max-width:36ch;}
   .cat-hero-contact{margin-top:8px !important;font-size:12.5px !important;}
   .cat-hero-contact a{color:var(--moss);font-weight:600;text-decoration:none;}
+  @media (min-width:768px){
+    .cat-hero h1{font-size:30px;}
+    .cat-hero p{max-width:none;}
+  }
 
   .cat-interes-form{margin-top:22px;display:flex;flex-direction:column;gap:14px;}
   .cat-interes-alt{
@@ -1118,6 +1207,8 @@ function Catalogo() {
   const [mostrarAuth, setMostrarAuth] = useState(false);
   const [mostrarVender, setMostrarVender] = useState(false);
   const [cerrandoSesion, setCerrandoSesion] = useState(false);
+  const [mostrarMenuCompartir, setMostrarMenuCompartir] = useState(false);
+  const [toastCompartir, setToastCompartir] = useState("");
 
   const [ready, setReady] = useState(false);
   const [cargandoCategoria, setCargandoCategoria] = useState(false);
@@ -1219,6 +1310,28 @@ function Catalogo() {
     try { await toggleFavorito(comprador.uid, objetoId, marcar); } catch {}
   }
 
+  function compartir() {
+    const url = window.location.href;
+    const titulo = "Casa en Casa — Muebles y artículos usados en CDMX";
+    const texto = "Encuentra objetos de segunda vida en Ciudad de México: muebles, cocina, electrodomésticos y más.";
+    if (navigator.share) {
+      navigator.share({ title: titulo, text: texto, url }).catch(() => {});
+    } else {
+      setMostrarMenuCompartir((v) => !v);
+    }
+  }
+
+  function copiarEnlace() {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      setMostrarMenuCompartir(false);
+      setToastCompartir("¡Enlace copiado!");
+      setTimeout(() => setToastCompartir(""), 2500);
+    }).catch(() => {
+      setToastCompartir("No se pudo copiar");
+      setTimeout(() => setToastCompartir(""), 2500);
+    });
+  }
+
   if (mostrarAuth) {
     return <div className="cat-app-inner"><BuyerAuth onClose={() => setMostrarAuth(false)} /></div>;
   }
@@ -1261,60 +1374,109 @@ function Catalogo() {
     const casa = casasMap[o.casaId];
     const esFavorito = favoritosIds.includes(o.id);
     return (
-      <div className="cat-screen">
+      <div className="cat-screen cat-screen--full" style={{position:"relative"}}>
         <div className="cat-header">
           <button className="cat-iconbtn" onClick={() => setSeleccionado(null)} aria-label="Volver">←</button>
           <div className="cat-header-title">Detalle</div>
-          <button className="cat-iconbtn" onClick={() => marcarFavorito(o.id, !esFavorito)} aria-label="Favorito">
-            {esFavorito ? "❤️" : "🤍"}
-          </button>
-        </div>
-        <div className="cat-detail-photo">
-          {(() => {
-            const miniaturas = o.fotos || (o.foto ? [o.foto] : []);
-            const fotoAMostrar = fotosCompletasDetalle[indiceFotoDetalle] || miniaturas[indiceFotoDetalle];
-            return fotoAMostrar
-              ? <img src={fotoAMostrar} alt={o.nombre} style={cargandoFotoDetalle ? {filter:"blur(2px)"} : undefined} />
-              : <span>{info.icon}</span>;
-          })()}
-        </div>
-        {(o.fotos || []).length > 1 && (
-          <div className="cec-ficha-thumbs" style={{padding:"10px 20px 0"}}>
-            {o.fotos.map((m, i) => (
-              <button key={i} className={"cec-ficha-thumb" + (i === indiceFotoDetalle ? " active" : "")} onClick={() => setIndiceFotoDetalle(i)}>
-                <img src={m} alt="" />
-              </button>
-            ))}
+          <div className="cat-header-actions">
+            <button className="cat-iconbtn" onClick={compartir} aria-label="Compartir" title="Compartir">⎙</button>
+            <button className="cat-iconbtn" onClick={() => marcarFavorito(o.id, !esFavorito)} aria-label="Favorito">
+              {esFavorito ? "❤️" : "🤍"}
+            </button>
           </div>
-        )}
-        <div className="cat-detail-body">
-          <div className="cat-eyebrow">{info.icon} {info.label}{o.subcategoria ? " · " + o.subcategoria : ""}</div>
-          <h1 className="cat-detail-nombre">{o.nombre || "Sin nombre"}</h1>
-          <div className="cat-detail-precio">{formatPrecio(o.precio)}</div>
-          {casa && <div className="cat-detail-row"><span>Ubicación general</span><span>{casa.nombre}</span></div>}
-          {o.descripcion && <div className="cat-detail-block"><span className="cat-detail-label">Descripción</span><p>{o.descripcion}</p></div>}
-          {o.unidades != null && <div className="cat-detail-row"><span>Unidades disponibles</span><span>{o.unidades}</span></div>}
-          <InteresForm objeto={o} casa={casa} comprador={comprador} />
+          {mostrarMenuCompartir && (
+            <div className="cat-share-menu">
+              <button onClick={() => { window.open("https://wa.me/?text=" + encodeURIComponent("Casa en Casa — " + window.location.href), "_blank"); setMostrarMenuCompartir(false); }}>
+                📱 WhatsApp
+              </button>
+              <button onClick={() => { window.open("mailto:?subject=" + encodeURIComponent("Casa en Casa") + "&body=" + encodeURIComponent(window.location.href), "_blank"); setMostrarMenuCompartir(false); }}>
+                ✉️ Correo electrónico
+              </button>
+              <button onClick={copiarEnlace}>
+                🔗 Copiar enlace
+              </button>
+            </div>
+          )}
         </div>
+        <div className="cat-detail-full">
+          <div className="cat-detail-photo">
+            {(() => {
+              const miniaturas = o.fotos || (o.foto ? [o.foto] : []);
+              const fotoAMostrar = fotosCompletasDetalle[indiceFotoDetalle] || miniaturas[indiceFotoDetalle];
+              return fotoAMostrar
+                ? <img
+                    src={fotoAMostrar}
+                    alt={o.nombre}
+                    loading="eager"
+                    decoding="async"
+                    width="640"
+                    height="480"
+                    style={cargandoFotoDetalle ? {filter:"blur(2px)"} : undefined}
+                  />
+                : <span>{info.icon}</span>;
+            })()}
+          </div>
+          {(o.fotos || []).length > 1 && (
+            <div className="cec-ficha-thumbs" style={{padding:"10px 20px 0"}}>
+              {o.fotos.map((m, i) => (
+                <button key={i} className={"cec-ficha-thumb" + (i === indiceFotoDetalle ? " active" : "")} onClick={() => setIndiceFotoDetalle(i)}>
+                  <img src={m} alt="" loading="lazy" decoding="async" width="52" height="52" />
+                </button>
+              ))}
+            </div>
+          )}
+          <div className="cat-detail-body">
+            <div className="cat-eyebrow">{info.icon} {info.label}{o.subcategoria ? " · " + o.subcategoria : ""}</div>
+            <h1 className="cat-detail-nombre">{o.nombre || "Sin nombre"}</h1>
+            <div className="cat-detail-precio">{formatPrecio(o.precio)}</div>
+            {casa && <div className="cat-detail-row"><span>Ubicación general</span><span>{casa.nombre}</span></div>}
+            {o.descripcion && <div className="cat-detail-block"><span className="cat-detail-label">Descripción</span><p>{o.descripcion}</p></div>}
+            {o.unidades != null && <div className="cat-detail-row"><span>Unidades disponibles</span><span>{o.unidades}</span></div>}
+            <InteresForm objeto={o} casa={casa} comprador={comprador} />
+          </div>
+        </div>
+        {toastCompartir && <div className="cec-toast">{toastCompartir}</div>}
       </div>
     );
   }
 
   return (
-    <div className="cat-screen">
-      <div className="cat-hero">
-        <div style={{display:"flex", justifyContent:"space-between", alignItems:"flex-start"}}>
-          <div className="cat-hero-tab">🏷️</div>
+    <div className="cat-screen" style={{position:"relative"}} onClick={() => mostrarMenuCompartir && setMostrarMenuCompartir(false)}>
+      {/* Header global con botón de compartir */}
+      <div className="cat-header">
+        <div className="cat-header-title" style={{fontFamily:"'Fraunces',Georgia,serif",fontWeight:600,fontSize:"18px"}}>Casa en Casa</div>
+        <div className="cat-header-actions">
           {comprador ? (
-            <button className="cat-btn cat-btn--ghost" style={{fontSize:"12px", padding:"7px 12px", width:"auto"}} onClick={() => setVista(vista === "cuenta" ? "catalogo" : "cuenta")}>
-              {vista === "cuenta" ? "Ver catálogo" : "👤 " + (comprador.nombre || "Mi cuenta")}
+            <button className="cat-iconbtn" onClick={() => setVista(vista === "cuenta" ? "catalogo" : "cuenta")} aria-label="Mi cuenta" title="Mi cuenta">
+              👤
             </button>
           ) : (
-            <button className="cat-btn cat-btn--ghost" style={{fontSize:"12px", padding:"7px 12px", width:"auto"}} onClick={() => setMostrarAuth(true)}>
+            <button className="cat-iconbtn" style={{fontSize:"12px",width:"auto",padding:"0 12px",borderRadius:"20px"}} onClick={() => setMostrarAuth(true)}>
               Iniciar sesión
             </button>
           )}
+          <button className="cat-iconbtn" onClick={(e) => { e.stopPropagation(); compartir(); }} aria-label="Compartir" title="Compartir">
+            ⎙
+          </button>
         </div>
+        {mostrarMenuCompartir && (
+          <div className="cat-share-menu" onClick={(e) => e.stopPropagation()}>
+            <button onClick={() => { window.open("https://wa.me/?text=" + encodeURIComponent("Casa en Casa — muebles y artículos usados en CDMX: " + window.location.href), "_blank"); setMostrarMenuCompartir(false); }}>
+              📱 WhatsApp
+            </button>
+            <button onClick={() => { window.open("mailto:?subject=" + encodeURIComponent("Casa en Casa") + "&body=" + encodeURIComponent("Muebles y artículos usados en CDMX: " + window.location.href), "_blank"); setMostrarMenuCompartir(false); }}>
+              ✉️ Correo electrónico
+            </button>
+            <button onClick={copiarEnlace}>
+              🔗 Copiar enlace
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Hero / panel izquierdo en desktop */}
+      <div className="cat-hero">
+        <div className="cat-hero-tab">🏷️</div>
         <h1>Catálogo</h1>
         <p>Objetos disponibles de Casa en Casa. Toca cualquiera para ver más y contactar.</p>
         <p className="cat-hero-contact" style={{fontWeight:600}}>📍 Por ahora, solo compraventa dentro de la Ciudad de México.</p>
@@ -1324,6 +1486,7 @@ function Catalogo() {
         </button>
       </div>
 
+      {/* Columna derecha: cuenta o catálogo */}
       {vista === "cuenta" ? (
         <div className="cec-form">
           <button className="cec-link-danger" disabled={cerrandoSesion}
@@ -1338,7 +1501,9 @@ function Catalogo() {
               {misFavoritos.map((o) => (
                 <button key={o.id} className="cat-card" onClick={() => setSeleccionado(o)}>
                   <div className="cat-card-photo">
-                    {o.foto ? <img src={o.foto} alt={o.nombre} loading="lazy" decoding="async" /> : <span>{categoriaInfo(o.categoria).icon}</span>}
+                    {o.foto
+                      ? <img src={o.foto} alt={o.nombre} loading="lazy" decoding="async" width="200" height="200" />
+                      : <span>{categoriaInfo(o.categoria).icon}</span>}
                   </div>
                   <div className="cat-card-info">
                     <div className="cat-card-nombre">{o.nombre || "Sin nombre"}</div>
@@ -1392,13 +1557,22 @@ function Catalogo() {
                 <p className="cat-empty-hint">Vuelve pronto, se van agregando nuevos objetos seguido.</p>
               </div>
             ) : (
-              visibles.map((o) => {
+              visibles.map((o, idx) => {
                 const info = categoriaInfo(o.categoria);
                 const esFavorito = favoritosIds.includes(o.id);
                 return (
                   <div key={o.id} className="cat-card" style={{cursor:"default"}}>
                     <div className="cat-card-photo" onClick={() => setSeleccionado(o)} style={{cursor:"pointer"}}>
-                      {o.foto ? <img src={o.foto} alt={o.nombre} loading="lazy" decoding="async" /> : <span>{info.icon}</span>}
+                      {o.foto
+                        ? <img
+                            src={o.foto}
+                            alt={o.nombre}
+                            loading={idx < 6 ? "eager" : "lazy"}
+                            decoding="async"
+                            width="300"
+                            height="300"
+                          />
+                        : <span>{info.icon}</span>}
                       <button className="cat-fav-btn" onClick={(e) => { e.stopPropagation(); marcarFavorito(o.id, !esFavorito); }} aria-label="Favorito">
                         {esFavorito ? "❤️" : "🤍"}
                       </button>
@@ -1415,28 +1589,10 @@ function Catalogo() {
 
           <div className="cat-footer">
             ¿Buscas algo en especial? <a href={"mailto:" + CONTACT_EMAIL}>Escríbenos directo</a>
-            <div style={{marginTop:"16px"}}>
-              <button onClick={() => {
-                if(navigator.share){
-                  navigator.share({title:"Casa en Casa",text:"Muebles y artículos usados en CDMX",url:window.location.href});
-                } else {
-                  navigator.clipboard.writeText(window.location.href).then(()=>alert("¡Enlace copiado al portapapeles!"));
-                }
-              }} style={{
-                background:"var(--moss)",color:"#fff",border:"none",borderRadius:"999px",
-                padding:"12px 22px",fontSize:"14px",fontWeight:"600",cursor:"pointer",
-                fontFamily:"'Work Sans',sans-serif",display:"inline-flex",alignItems:"center",gap:"8px"
-              }}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-                </svg>
-                Compartir esta página
-              </button>
-            </div>
           </div>
         </React.Fragment>
       )}
+      {toastCompartir && <div className="cec-toast">{toastCompartir}</div>}
     </div>
   );
 }
