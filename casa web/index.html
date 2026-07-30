@@ -1303,17 +1303,39 @@ function Catalogo() {
   return (
     <div className="cat-screen">
       <div className="cat-hero">
-        <div style={{display:"flex", justifyContent:"space-between", alignItems:"flex-start"}}>
+        <div style={{display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:"8px"}}>
           <div className="cat-hero-tab">🏷️</div>
-          {comprador ? (
-            <button className="cat-btn cat-btn--ghost" style={{fontSize:"12px", padding:"7px 12px", width:"auto"}} onClick={() => setVista(vista === "cuenta" ? "catalogo" : "cuenta")}>
-              {vista === "cuenta" ? "Ver catálogo" : "👤 " + (comprador.nombre || "Mi cuenta")}
+          <div style={{display:"flex", alignItems:"center", gap:"6px"}}>
+            <button
+              onClick={() => {
+                if (navigator.share) {
+                  navigator.share({ title: "Casa en Casa", text: "Muebles y artículos usados en CDMX", url: window.location.href });
+                } else {
+                  navigator.clipboard.writeText(window.location.href).then(() => alert("¡Enlace copiado al portapapeles!"));
+                }
+              }}
+              aria-label="Compartir"
+              title="Compartir"
+              style={{
+                width:"34px", height:"34px", borderRadius:"50%", border:"1px solid var(--paper-line)",
+                background:"var(--card)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+              </svg>
             </button>
-          ) : (
-            <button className="cat-btn cat-btn--ghost" style={{fontSize:"12px", padding:"7px 12px", width:"auto"}} onClick={() => setMostrarAuth(true)}>
-              Iniciar sesión
-            </button>
-          )}
+            {comprador ? (
+              <button className="cat-btn cat-btn--ghost" style={{fontSize:"12px", padding:"7px 12px", width:"auto"}} onClick={() => setVista(vista === "cuenta" ? "catalogo" : "cuenta")}>
+                {vista === "cuenta" ? "Ver catálogo" : "👤 " + (comprador.nombre || "Mi cuenta")}
+              </button>
+            ) : (
+              <button className="cat-btn cat-btn--ghost" style={{fontSize:"12px", padding:"7px 12px", width:"auto"}} onClick={() => setMostrarAuth(true)}>
+                Iniciar sesión
+              </button>
+            )}
+          </div>
         </div>
         <h1>Catálogo</h1>
         <p>Objetos disponibles de Casa en Casa. Toca cualquiera para ver más y contactar.</p>
