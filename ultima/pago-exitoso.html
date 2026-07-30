@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pago exitoso · Casa en Casa</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  html,body{margin:0;padding:0;background:#F5F0E1;font-family:'Work Sans',sans-serif;color:#2A241D;}
+  .wrap{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;text-align:center;}
+  .badge{font-size:44px;margin-bottom:16px;}
+  h1{font-family:'Fraunces',serif;font-size:26px;margin:0 0 12px;}
+  p{color:#756B5C;font-size:15px;line-height:1.5;margin:0 0 22px;}
+  a.btn{
+    display:inline-block;background:#4B6350;color:#fff;text-decoration:none;
+    padding:13px 24px;border-radius:12px;font-weight:600;font-size:15px;
+  }
+  .err{color:#8B4444;}
+</style>
+</head>
+<body>
+<div class="wrap" id="root">
+  <div class="badge">⏳</div>
+  <h1>Confirmando tu pago…</h1>
+  <p>No cierres esta página, esto toma solo unos segundos.</p>
+</div>
+
+<script>
+(async function () {
+  const params = new URLSearchParams(window.location.search);
+  const sessionId = params.get("session_id");
+  const root = document.getElementById("root");
+
+  if (!sessionId) {
+    root.innerHTML = '<div class="badge">⚠️</div><h1 class="err">No encontramos tu pago</h1><p>Si crees que esto es un error, escríbenos a infocasaencasa@gmail.com.</p>';
+    return;
+  }
+
+  try {
+    const res = await fetch("/api/verificar-pago?session_id=" + encodeURIComponent(sessionId));
+    const data = await res.json();
+    if (data.ok) {
+      root.innerHTML =
+        '<div class="badge">🎉</div>' +
+        '<h1>¡Pago confirmado!</h1>' +
+        '<p>Tu cuenta de vendedor ya está activa. Ahora puedes iniciar sesión y crear tu primera Casa.</p>' +
+        '<a class="btn" href="/">Ir a mi panel</a>';
+    } else {
+      root.innerHTML =
+        '<div class="badge">⚠️</div>' +
+        '<h1 class="err">No pudimos confirmar tu pago</h1>' +
+        '<p>' + (data.error || "Intenta de nuevo o escríbenos a infocasaencasa@gmail.com.") + '</p>';
+    }
+  } catch (e) {
+    root.innerHTML = '<div class="badge">⚠️</div><h1 class="err">Ocurrió un error</h1><p>Escríbenos a infocasaencasa@gmail.com y lo resolvemos.</p>';
+  }
+})();
+</script>
+</body>
+</html>
