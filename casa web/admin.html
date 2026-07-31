@@ -1102,6 +1102,25 @@ function VendedoresTab({ casas, onOpenCasa }) {
             {susCasas.length === 0 && activo && (
               <p className="cec-note" style={{margin:0}}>Todavía no ha creado ninguna casa.</p>
             )}
+            {!activo && (
+              <button
+                onClick={async () => {
+                  try {
+                    await window.__cecDb.collection("vendedores").doc(v.uid).update({ haPagado: true });
+                    setVendedores((prev) => prev.map((x) => x.uid === v.uid ? { ...x, haPagado: true } : x));
+                  } catch(e) {
+                    alert("Error al activar: " + e.message);
+                  }
+                }}
+                style={{
+                  background:"var(--moss)", color:"#fff", border:"none", borderRadius:"999px",
+                  padding:"10px 20px", fontSize:"13.5px", fontWeight:"600", cursor:"pointer",
+                  fontFamily:"'Work Sans',sans-serif"
+                }}
+              >
+                ✓ Activar vendedor
+              </button>
+            )}
           </div>
         );
       })}
