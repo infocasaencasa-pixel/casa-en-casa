@@ -976,37 +976,18 @@ function SolicitudesTab() {
 
   return (
     <div className="cec-form">
-      {solicitudes.map((s) => {
-        const aprobada = s.estado === "aprobada";
-        const rechazada = s.estado === "rechazada";
-        return (
-          <div key={s.id} style={{background:"var(--card)", border:"1px solid " + (aprobada ? "var(--moss)" : rechazada ? "var(--sold)" : "var(--paper-line)"), borderRadius:"12px", padding:"14px"}}>
-            <div style={{display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:"6px"}}>
-              <div style={{fontWeight:600, fontSize:"14.5px"}}>{s.nombre}</div>
-              {aprobada && <span style={{fontSize:"12px", background:"var(--moss-soft)", color:"var(--moss)", borderRadius:"999px", padding:"3px 10px", fontWeight:600}}>✓ Aprobada</span>}
-              {rechazada && <span style={{fontSize:"12px", background:"var(--sold-soft)", color:"var(--sold)", borderRadius:"999px", padding:"3px 10px", fontWeight:600}}>✗ Rechazada</span>}
-              {!aprobada && !rechazada && <span style={{fontSize:"12px", background:"var(--clay-soft)", color:"var(--clay)", borderRadius:"999px", padding:"3px 10px", fontWeight:600}}>Pendiente</span>}
-            </div>
-            <div className="cec-note" style={{marginBottom:"8px"}}>{new Date(s.createdAt).toLocaleString("es-MX")}</div>
-            <div style={{fontSize:"13.5px", lineHeight:1.6, marginBottom:"12px"}}>
-              <div>✉️ <a href={"mailto:" + s.correo}>{s.correo}</a></div>
-              {s.telefono && <div>📞 {s.telefono}</div>}
-              {s.motivo && <div style={{marginTop:"6px", color:"var(--ink-soft)"}}>"{s.motivo}"</div>}
-              {!s.uid && !s.compradorUid && <div style={{marginTop:"6px", color:"var(--clay)", fontSize:"12px"}}>⚠️ Sin UID — esta persona aún no creó cuenta en el catálogo</div>}
-            </div>
-            {!aprobada && !rechazada && (
-              <div style={{display:"flex", gap:"8px"}}>
-                <button onClick={() => aprobar(s)} className="cec-btn cec-btn--primary" style={{flex:1, padding:"10px", fontSize:"13.5px"}}>
-                  ✓ Aprobar
-                </button>
-                <button onClick={() => rechazar(s)} className="cec-btn cec-btn--ghost" style={{flex:1, padding:"10px", fontSize:"13.5px", color:"var(--sold)", borderColor:"var(--sold)"}}>
-                  ✗ Rechazar
-                </button>
-              </div>
-            )}
+      {solicitudes.map((s) => (
+        <div key={s.id} style={{background:"var(--card)", border:"1px solid var(--paper-line)", borderRadius:"12px", padding:"14px"}}>
+          <div style={{fontWeight:600, fontSize:"14.5px", marginBottom:"4px"}}>{s.nombre}</div>
+          <div className="cec-note" style={{marginBottom:"8px"}}>{new Date(s.createdAt).toLocaleString("es-MX")}</div>
+          <div style={{fontSize:"13.5px", lineHeight:1.6}}>
+            <div>✉️ <a href={"mailto:" + s.correo}>{s.correo}</a></div>
+            {s.telefono && <div>📞 {s.telefono}</div>}
+            {s.motivo && <div style={{marginTop:"6px", color:"var(--ink-soft)"}}>"{s.motivo}"</div>}
+            {!s.uid && !s.compradorUid && <div style={{marginTop:"6px", color:"var(--clay)", fontSize:"12px"}}>⚠️ Para activarla ve a la pestaña Vendedores una vez que cree su cuenta</div>}
           </div>
-        );
-      })}
+        </div>
+      ))}
     </div>
   );
 }
